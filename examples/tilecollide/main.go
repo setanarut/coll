@@ -62,14 +62,14 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Draw tiles
-	for y := 0; y < len(TileMap); y++ {
-		for x := 0; x < len(TileMap[y]); x++ {
+	for y := range len(TileMap) {
+		for x := range len(TileMap[y]) {
 			if TileMap[y][x] != 0 {
 				vector.DrawFilledRect(screen,
-					float32(x*collider.TileSize.X),
-					float32(y*collider.TileSize.Y),
-					float32(collider.TileSize.X),
-					float32(collider.TileSize.Y),
+					float32(x*collider.CellSize.X),
+					float32(y*collider.CellSize.Y),
+					float32(collider.CellSize.X),
+					float32(collider.CellSize.Y),
 					color.Gray{Y: 128},
 					true)
 			}

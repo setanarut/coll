@@ -1,8 +1,9 @@
 ## coll - 2d collision routines
 
-- AABB-Tilemap
 - AABB-Segment
 - AABB-AABB
 - AABB-AABB (sweep)
+- AABB-Tilemap
+- Segment-Tilemap (DDA)
 
 See examples folder
