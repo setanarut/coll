@@ -5,5 +5,6 @@
 - AABB-AABB (sweep)
 - AABB-Tilemap
 - Segment-Tilemap (DDA)
+- AABB-Platform
 
 See examples folder
