@@ -20,7 +20,7 @@ var box1 = AABB{
 	Half: Vec{100, 100},
 }
 
-var hit *coll.Hit
+var hit *coll.HitInfo
 var collided bool
 
 var pos = Vec{50, 50}
@@ -46,8 +46,8 @@ func (g *Game) Update() error {
 
 	delta := cursor.Sub(pos)
 
-	hit = &coll.Hit{}
-	collided = box1.Segment(pos, delta, coll.Vec{}, hit)
+	hit = &coll.HitInfo{}
+	collided = coll.Segment(&box1, pos, delta, coll.Vec{}, hit)
 
 	return nil
 }

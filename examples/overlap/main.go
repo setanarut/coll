@@ -15,16 +15,16 @@ import (
 type Vec = coll.Vec
 type AABB = coll.AABB
 
-var box1 = AABB{
+var box1 = &AABB{
 	Pos:  Vec{200, 200},
 	Half: Vec{100, 25},
 }
-var box2 = AABB{
+var box2 = &AABB{
 	Pos:  Vec{200, 200},
 	Half: Vec{25, 25},
 }
 
-var hit *coll.Hit
+var hit *coll.HitInfo
 
 var collided bool
 var velocity = Vec{}
@@ -50,8 +50,8 @@ func (g *Game) Update() error {
 	velocity = cursor.Sub(box2.Pos)
 	box2.Pos = box2.Pos.Add(velocity)
 
-	hit = &coll.Hit{}
-	collided = box1.Overlap(box2, hit)
+	hit = &coll.HitInfo{}
+	collided = coll.Overlap(box1, box2, hit)
 
 	box2.Pos = box2.Pos.Add(hit.Delta)
 

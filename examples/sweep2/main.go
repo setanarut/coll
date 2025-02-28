@@ -15,20 +15,18 @@ import (
 type Vec = coll.Vec
 type AABB = coll.AABB
 
-var box1 = &AABB{
-	Pos:  Vec{400, 250},
+var a = &AABB{
+	Pos:  Vec{0, 250},
 	Half: Vec{60, 20},
 }
-var box2 = &AABB{
-	Pos:  Vec{0, 0},
+var b = &AABB{
+	Pos:  Vec{100, 100},
 	Half: Vec{12, 12},
 }
 
-var hit = &coll.HitInfo{}
+var hit *coll.HitInfo = &coll.HitInfo{}
 
 var collided bool
-var vel = Vec{}
-var cursor = Vec{}
 
 func main() {
 	g := &Game{W: 800, H: 500}
@@ -43,51 +41,50 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	curX, curY := ebiten.CursorPosition()
-	cursor = Vec{float64(curX), float64(curY)}
+	av := coll.Vec{2, 0}
+	bv := Axis().Scale(6)
+	hit.Reset()
 
-	vel = cursor.Sub(box2.Pos)
-
-	collided = coll.OverlapSweep(box1, box2, vel, hit)
-
+	collided = coll.OverlapSweep2(a, b, av, bv, hit)
 	if collided {
-		vel = vel.Add(hit.Delta)
+
+		bv = bv.Add(hit.Delta)
 
 	}
-	box2.Pos = box2.Pos.Add(vel)
 
+	a.Pos = a.Pos.Add(av)
+
+	if a.Pos.X > g.W {
+		a.Pos.X = 0
+	}
+
+	b.Pos = b.Pos.Add(bv)
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-
-	colour := colornames.Green
-	if collided {
-		colour = colornames.Yellow
-	}
-
 	vector.StrokeRect(
 		s,
-		float32(box1.Pos.X-box1.Half.X),
-		float32(box1.Pos.Y-box1.Half.Y),
-		float32(box1.Half.X*2),
-		float32(box1.Half.Y*2),
+		float32(a.Pos.X-a.Half.X),
+		float32(a.Pos.Y-a.Half.Y),
+		float32(a.Half.X*2),
+		float32(a.Half.Y*2),
+		1,
+		colornames.Gray,
+		false,
+	)
+	vector.StrokeRect(
+		s,
+		float32(b.Pos.X-b.Half.X),
+		float32(b.Pos.Y-b.Half.Y),
+		float32(b.Half.X*2),
+		float32(b.Half.Y*2),
 		1,
 		colornames.Gray,
 		false,
 	)
 
 	if collided {
-		vector.StrokeRect(
-			s,
-			float32(cursor.X-box2.Half.X),
-			float32(cursor.Y-box2.Half.Y),
-			float32(box2.Half.X*2),
-			float32(box2.Half.Y*2),
-			1,
-			colornames.Red,
-			false,
-		)
 		// contact point
 		px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
 		nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
@@ -95,22 +92,12 @@ func (g *Game) Draw(s *ebiten.Image) {
 		vector.StrokeLine(s, px, py, nx, ny, 1, colornames.Yellow, false)
 	}
 
-	vector.StrokeRect(
-		s,
-		float32(box2.Pos.X-box2.Half.X),
-		float32(box2.Pos.Y-box2.Half.Y),
-		float32(box2.Half.X*2),
-		float32(box2.Half.Y*2),
-		1,
-		colour,
-		false,
-	)
 	ebitenutil.DebugPrint(s, fmt.Sprintf(
-		"Pos: %v Delta: %v Normal: %v Time: %v ",
-		hit.Pos,
+		"Delta: %v\nNormal: %v\nTime: %v\nPos: %v",
 		hit.Delta,
 		hit.Normal,
 		hit.Time,
+		hit.Pos,
 	))
 }
 
@@ -120,4 +107,20 @@ func (g *Game) Layout(w, h int) (int, int) {
 
 func (g *Game) LayoutF(w, h float64) (float64, float64) {
 	return g.W, g.H
+}
+
+func Axis() (axis Vec) {
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		axis.Y -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		axis.Y += 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		axis.X -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		axis.X += 1
+	}
+	return
 }
