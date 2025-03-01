@@ -249,20 +249,20 @@ func (c *Collider) Collide(rect AABB, delta Vec, onCollide CollisionCallback) Ve
 
 	if math.Abs(delta.X) > math.Abs(delta.Y) {
 		if delta.X != 0 {
-			delta.X = c.CollideX(rect, delta.X)
+			delta.X = c.CollideX(&rect, delta.X)
 		}
 		if delta.Y != 0 {
 			rect.Pos.X += delta.X
-			delta.Y = c.CollideY(rect, delta.Y)
+			delta.Y = c.CollideY(&rect, delta.Y)
 		}
 	} else {
 		if delta.Y != 0 {
-			delta.Y = c.CollideY(rect, delta.Y)
+			delta.Y = c.CollideY(&rect, delta.Y)
 		}
 		if delta.X != 0 {
 
 			rect.Pos.Y += delta.Y
-			delta.X = c.CollideX(rect, delta.X)
+			delta.X = c.CollideX(&rect, delta.X)
 		}
 	}
 
@@ -274,7 +274,7 @@ func (c *Collider) Collide(rect AABB, delta Vec, onCollide CollisionCallback) Ve
 }
 
 // CollideX checks for collisions along the X axis and returns the allowed X movement
-func (c *Collider) CollideX(rect AABB, deltaX float64) float64 {
+func (c *Collider) CollideX(rect *AABB, deltaX float64) float64 {
 	checkLimit := max(1, int(math.Ceil(math.Abs(deltaX)/float64(c.CellSize.Y)))+1)
 
 	rectTop := rect.Pos.Y - rect.Half.Y
@@ -347,7 +347,7 @@ func (c *Collider) CollideX(rect AABB, deltaX float64) float64 {
 }
 
 // CollideY checks for collisions along the Y axis and returns the allowed Y movement
-func (c *Collider) CollideY(rect AABB, deltaY float64) float64 {
+func (c *Collider) CollideY(rect *AABB, deltaY float64) float64 {
 
 	checkLimit := max(1, int(math.Ceil(math.Abs(deltaY)/float64(c.CellSize.Y)))+1)
 
