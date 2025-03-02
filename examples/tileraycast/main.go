@@ -9,10 +9,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 	"golang.org/x/image/colornames"
 )
 
-type Vec = coll.Vec
+type Vec = v.Vec
 
 var screen = Vec{600, 600}
 
@@ -40,7 +41,7 @@ func (g *Game) Update() error {
 	if angle >= 2*math.Pi {
 		angle = 0
 	}
-	dir := coll.FromAngle(angle)
+	dir := v.FromAngle(angle)
 
 	coll.RaycastDDA(start, dir, 400, TileMap, float64(cellSize), hitRayInfo) // length'i 600 yaptık
 	return nil

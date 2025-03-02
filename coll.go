@@ -3,7 +3,11 @@ package coll
 import (
 	"image"
 	"math"
+
+	"github.com/setanarut/v"
 )
+
+type Vec = v.Vec
 
 const EPSILON = 1e-8
 
@@ -304,7 +308,7 @@ func (c *Collider) CollideX(rect *AABB, deltaX float64) float64 {
 						c.Collisions = append(c.Collisions, HitTileInfo{
 							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
-							Normal:     Left,
+							Normal:     v.Left,
 						})
 					}
 				}
@@ -335,7 +339,7 @@ func (c *Collider) CollideX(rect *AABB, deltaX float64) float64 {
 						c.Collisions = append(c.Collisions, HitTileInfo{
 							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
-							Normal:     Right,
+							Normal:     v.Right,
 						})
 					}
 				}
@@ -379,7 +383,7 @@ func (c *Collider) CollideY(rect *AABB, deltaY float64) float64 {
 						c.Collisions = append(c.Collisions, HitTileInfo{
 							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
-							Normal:     Up,
+							Normal:     v.Up,
 						})
 					}
 				}
@@ -409,7 +413,7 @@ func (c *Collider) CollideY(rect *AABB, deltaY float64) float64 {
 						c.Collisions = append(c.Collisions, HitTileInfo{
 							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
-							Normal:     Down,
+							Normal:     v.Down,
 						})
 					}
 				}

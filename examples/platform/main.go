@@ -9,10 +9,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 )
 
 type AABB = coll.AABB
-type Vec = coll.Vec
+type Vec = v.Vec
 
 const (
 	screenWidth  = 800
@@ -31,7 +32,7 @@ var (
 		Half: Vec{20, 100},
 	}
 
-	rect1Vel = Vec{0, 0}
+	rect1Vel = v.Vec{0, 0}
 	platVel  = Vec{1, 0}
 	hit      = &coll.HitInfo2{}
 	jumping  bool
@@ -73,20 +74,15 @@ func (g *Game) Update() error {
 		// Adjust position on collision
 		rect1.Pos.X += hit.Delta.X
 		rect1.Pos.Y += hit.Delta.Y
-
 		if hit.Top {
 			jumping = false
 			rect1Vel.Y = 0 // Reset vertical velocity
-			fmt.Println("Top")
 		}
 		if hit.Bottom {
-			fmt.Println("Bottom")
 		}
 		if hit.Right {
-			fmt.Println("Right")
 		}
 		if hit.Left {
-			fmt.Println("Left")
 		}
 	}
 
