@@ -9,7 +9,7 @@ require (
 	github.com/ebitengine/hideconsole v1.0.0 // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
 	github.com/jezek/xgb v1.1.1 // indirect
-	github.com/setanarut/v v1.0.1
+	github.com/setanarut/v v1.1.0
 	golang.org/x/image v0.24.0
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect

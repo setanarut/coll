@@ -11,22 +11,6 @@ type Vec = v.Vec
 
 const EPSILON = 1e-8
 
-func clamp(value, min, max float64) float64 {
-	if value < min {
-		return min
-	} else if value > max {
-		return max
-	}
-	return value
-}
-
-func sign(value float64) float64 {
-	if value < 0 {
-		return -1
-	}
-	return 1
-}
-
 type AABB struct {
 	Pos  Vec
 	Half Vec
@@ -104,14 +88,13 @@ func AABBPlatform(a, platform *AABB, aVel, bVel Vec, h *HitInfo2) bool {
 	return true
 }
 func Segment(a *AABB, pos, delta, padding Vec, hit *HitInfo) bool {
-	scaleX := 1.0 / delta.X
-	scaleY := 1.0 / delta.Y
-	signX := sign(scaleX)
-	signY := sign(scaleY)
-	nearTimeX := (a.Pos.X - signX*(a.Half.X+padding.X) - pos.X) * scaleX
-	nearTimeY := (a.Pos.Y - signY*(a.Half.Y+padding.Y) - pos.Y) * scaleY
-	farTimeX := (a.Pos.X + signX*(a.Half.X+padding.X) - pos.X) * scaleX
-	farTimeY := (a.Pos.Y + signY*(a.Half.Y+padding.Y) - pos.Y) * scaleY
+	scale := v.One.Div(delta)
+	signX := math.Copysign(1, scale.X)
+	signY := math.Copysign(1, scale.Y)
+	nearTimeX := (a.Pos.X - signX*(a.Half.X+padding.X) - pos.X) * scale.X
+	nearTimeY := (a.Pos.Y - signY*(a.Half.Y+padding.Y) - pos.Y) * scale.Y
+	farTimeX := (a.Pos.X + signX*(a.Half.X+padding.X) - pos.X) * scale.X
+	farTimeY := (a.Pos.Y + signY*(a.Half.Y+padding.Y) - pos.Y) * scale.Y
 	if math.IsNaN(nearTimeY) {
 		nearTimeY = math.Inf(1)
 	}
@@ -129,7 +112,8 @@ func Segment(a *AABB, pos, delta, padding Vec, hit *HitInfo) bool {
 	if hit == nil {
 		return true
 	}
-	hit.Time = clamp(nearTime, 0, 1)
+	hit.Time = max(0, min(1, nearTime))
+
 	if nearTimeX > nearTimeY {
 		hit.Normal.X = -signX
 		hit.Normal.Y = 0
@@ -164,13 +148,13 @@ func Overlap(a, b *AABB, hit *HitInfo) bool {
 
 	// hit reset here
 	if px < py {
-		sx := sign(dx)
+		sx := math.Copysign(1, dx)
 		hit.Delta.X = px * sx
 		hit.Normal.X = sx
 		hit.Pos.X = a.Pos.X + a.Half.X*sx
 		hit.Pos.Y = b.Pos.Y
 	} else {
-		sy := sign(dy)
+		sy := math.Copysign(1, dy)
 		hit.Delta.Y = py * sy
 		hit.Normal.Y = sy
 		hit.Pos.X = b.Pos.X
@@ -186,18 +170,10 @@ func OverlapSweep(staticA, b *AABB, bDelta Vec, hit *HitInfo) bool {
 	}
 	result := Segment(staticA, b.Pos, bDelta, b.Half, hit)
 	if result {
-		hit.Time = clamp(hit.Time, 0, 1)
+		hit.Time = max(0, min(1, hit.Time))
 		direction := bDelta.Unit()
-		hit.Pos.X = clamp(
-			hit.Pos.X+direction.X*b.Half.X,
-			staticA.Pos.X-staticA.Half.X,
-			staticA.Pos.X+staticA.Half.X,
-		)
-		hit.Pos.Y = clamp(
-			hit.Pos.Y+direction.Y*b.Half.Y,
-			staticA.Pos.Y-staticA.Half.Y,
-			staticA.Pos.Y+staticA.Half.Y,
-		)
+		hit.Pos.X = max(staticA.Pos.X-staticA.Half.X, min(staticA.Pos.X+staticA.Half.X, hit.Pos.X+direction.X*b.Half.X))
+		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(staticA.Pos.Y-staticA.Half.Y, staticA.Pos.Y+staticA.Half.Y))
 	}
 	return result
 }
