@@ -45,7 +45,7 @@ type Game struct {
 func (g *Game) Update() error {
 
 	hit = &coll.HitInfo{}
-	collided = coll.OverlapSweep(&box1, &box2, vel, hit)
+	collided = coll.AABBAABBSweep1(&box1, &box2, vel, hit)
 
 	// if collided {
 	// 	vel = vel.Mul(hit.Normal.Rotate(-math.Pi / 2))

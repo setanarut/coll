@@ -16,7 +16,7 @@ import (
 type Vec = v.Vec
 type AABB = coll.AABB
 
-var box1 = AABB{
+var box = AABB{
 	Pos:  Vec{200, 200},
 	Half: Vec{100, 100},
 }
@@ -48,7 +48,7 @@ func (g *Game) Update() error {
 	delta := cursor.Sub(pos)
 
 	hit = &coll.HitInfo{}
-	collided = coll.Segment(&box1, pos, delta, v.Vec{}, hit)
+	collided = coll.AABBSegmentOverlap(&box, pos, delta, v.Vec{}, hit)
 
 	return nil
 }
@@ -62,10 +62,10 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 	vector.StrokeRect(
 		s,
-		float32(box1.Pos.X-box1.Half.X),
-		float32(box1.Pos.Y-box1.Half.Y),
-		float32(box1.Half.X*2),
-		float32(box1.Half.Y*2),
+		float32(box.Pos.X-box.Half.X),
+		float32(box.Pos.Y-box.Half.Y),
+		float32(box.Half.X*2),
+		float32(box.Half.Y*2),
 		1,
 		colornames.Gray,
 		false,

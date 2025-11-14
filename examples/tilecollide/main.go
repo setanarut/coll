@@ -12,17 +12,14 @@ import (
 	"github.com/setanarut/v"
 )
 
-type Vec = v.Vec
-type AABB = coll.AABB
-
 const (
 	screenWidth  = 640
 	screenHeight = 480
 )
 
-var rect = AABB{
-	Pos:  Vec{140, 130},
-	Half: Vec{8, 8},
+var rect = coll.AABB{
+	Pos:  v.Vec{140, 130},
+	Half: v.Vec{8, 8},
 }
 
 var (
@@ -37,7 +34,7 @@ var (
 		{1, 4, 2, 8, 1, 88, 13, 1},
 	}
 
-	collider = coll.NewCollider(TileMap, screenWidth/8, screenHeight/8)
+	collider = coll.NewTileCollider(TileMap, screenWidth/8, screenHeight/8)
 )
 
 type Game struct {
@@ -110,7 +107,7 @@ func main() {
 	}
 }
 
-func Axis() (axis Vec) {
+func Axis() (axis v.Vec) {
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
 		axis.Y -= 1
 	}

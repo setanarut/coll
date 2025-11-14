@@ -46,7 +46,7 @@ func (g *Game) Update() error {
 	bv := Axis().Scale(6)
 	hit.Reset()
 
-	collided = coll.OverlapSweep2(a, b, av, bv, hit)
+	collided = coll.AABBAABBSweep2(a, b, av, bv, hit)
 	if collided {
 
 		bv = bv.Add(hit.Delta)
@@ -89,7 +89,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		// contact point
 		px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
 		nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
-		vector.DrawFilledCircle(s, px, py, 2, colornames.Yellow, true)
+		vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
 		vector.StrokeLine(s, px, py, nx, ny, 1, colornames.Yellow, false)
 	}
 

@@ -49,7 +49,7 @@ func (g *Game) Update() error {
 
 	vel = cursor.Sub(box2.Pos)
 
-	collided = coll.OverlapSweep(box1, box2, vel, hit)
+	collided = coll.AABBAABBSweep1(box1, box2, vel, hit)
 
 	if collided {
 		vel = vel.Add(hit.Delta)

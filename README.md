@@ -1,8 +1,9 @@
 ## coll - 2d collision routines
 
-- AABB-Segment
 - AABB-AABB
-- AABB-AABB (sweep)
+- AABB-AABB (Sweep)
+- AABB-Segment
+- AABB-Circle (Sweep)
 - AABB-Tilemap
 - Segment-Tilemap (DDA)
 - AABB-Platform

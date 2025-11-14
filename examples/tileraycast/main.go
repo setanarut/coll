@@ -13,9 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Vec = v.Vec
-
-var screen = Vec{600, 600}
+var screen = v.Vec{600, 600}
 
 var (
 	hitRayInfo = &coll.HitRayInfo{}
@@ -75,7 +73,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		true)
 
 	// dot
-	vector.DrawFilledCircle(
+	vector.FillCircle(
 		s,
 		float32(hitRayInfo.Point.X),
 		float32(hitRayInfo.Point.Y),

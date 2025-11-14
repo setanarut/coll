@@ -2,27 +2,12 @@
 package coll
 
 import (
-	"image"
 	"math"
 
 	"github.com/setanarut/v"
 )
 
 const EPSILON = 1e-8
-
-type AABB struct {
-	Pos  v.Vec
-	Half v.Vec
-}
-
-func (a *AABB) Left() float64       { return a.Pos.X - a.Half.X }
-func (a *AABB) Right() float64      { return a.Pos.X + a.Half.X }
-func (a *AABB) Top() float64        { return a.Pos.Y - a.Half.Y }
-func (a *AABB) Bottom() float64     { return a.Pos.Y + a.Half.Y }
-func (a *AABB) SetLeft(l float64)   { a.Pos.X = l + a.Half.X }
-func (a *AABB) SetRight(r float64)  { a.Pos.X = r - a.Half.X }
-func (a *AABB) SetTop(t float64)    { a.Pos.Y = t + a.Half.Y }
-func (a *AABB) SetBottom(b float64) { a.Pos.Y = b - a.Half.Y }
 
 type HitInfo struct {
 	Pos    v.Vec
@@ -31,20 +16,20 @@ type HitInfo struct {
 	Time   float64
 }
 
-func (h *HitInfo) Reset() {
-	*h = HitInfo{}
-}
-
 type HitInfo2 struct {
 	Right, Bottom, Left, Top bool
 	Delta                    v.Vec
 }
 
-// AABBPlatform moving platform collision
-func AABBPlatform(a, platform *AABB, aVel, bVel v.Vec, h *HitInfo2) bool {
+func (h *HitInfo) Reset() {
+	*h = HitInfo{}
+}
+
+// AABBPlatform returns hit info for a. Does not prevent collision tunneling, a slides along the platform edges.
+func AABBPlatform(a, platform *AABB, aVel, platformVel v.Vec, h *HitInfo2) bool {
 	// Calculate old positions using velocities
 	aOldPos := v.Vec{a.Pos.X - aVel.X, a.Pos.Y - aVel.Y}
-	bOldPos := v.Vec{platform.Pos.X - bVel.X, platform.Pos.Y - bVel.Y}
+	bOldPos := v.Vec{platform.Pos.X - platformVel.X, platform.Pos.Y - platformVel.Y}
 
 	// Check collision at current positions using half dimensions
 	xDist := math.Abs(a.Pos.X - platform.Pos.X)
@@ -86,7 +71,8 @@ func AABBPlatform(a, platform *AABB, aVel, bVel v.Vec, h *HitInfo2) bool {
 
 	return true
 }
-func Segment(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
+
+func AABBSegmentOverlap(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
 	scale := v.One.Div(delta)
 	signX := math.Copysign(1, scale.X)
 	signY := math.Copysign(1, scale.Y)
@@ -128,7 +114,7 @@ func Segment(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
 }
 
 // OverlapSweep returns hit info for b
-func Overlap(a, b *AABB, hit *HitInfo) bool {
+func AABBOverlap(a, b *AABB, hit *HitInfo) bool {
 	dx := b.Pos.X - a.Pos.X
 	px := b.Half.X + a.Half.X - math.Abs(dx)
 	if px <= 0 {
@@ -162,25 +148,25 @@ func Overlap(a, b *AABB, hit *HitInfo) bool {
 	return true
 }
 
-// OverlapSweep returns hit info for b
-func OverlapSweep(staticA, b *AABB, bDelta v.Vec, hit *HitInfo) bool {
+// AABBAABBSweep1 returns hit info for dynamicB
+func AABBAABBSweep1(staticA, dynamicB *AABB, bDelta v.Vec, hit *HitInfo) bool {
 	if bDelta.IsZero() {
-		return Overlap(staticA, b, hit)
+		return AABBOverlap(staticA, dynamicB, hit)
 	}
-	result := Segment(staticA, b.Pos, bDelta, b.Half, hit)
+	result := AABBSegmentOverlap(staticA, dynamicB.Pos, bDelta, dynamicB.Half, hit)
 	if result {
 		hit.Time = max(0, min(1, hit.Time))
 		direction := bDelta.Unit()
-		hit.Pos.X = max(staticA.Pos.X-staticA.Half.X, min(staticA.Pos.X+staticA.Half.X, hit.Pos.X+direction.X*b.Half.X))
-		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(staticA.Pos.Y-staticA.Half.Y, staticA.Pos.Y+staticA.Half.Y))
+		hit.Pos.X = max(staticA.Pos.X-staticA.Half.X, min(staticA.Pos.X+staticA.Half.X, hit.Pos.X+direction.X*dynamicB.Half.X))
+		hit.Pos.Y = max(hit.Pos.Y+direction.Y*dynamicB.Half.Y, min(staticA.Pos.Y-staticA.Half.Y, staticA.Pos.Y+staticA.Half.Y))
 	}
 	return result
 }
 
-// OverlapSweep2 returns hit info for b
-func OverlapSweep2(a, b *AABB, aDelta, bDelta v.Vec, hit *HitInfo) bool {
+// AABBAABBSweep2 returns hit info for b
+func AABBAABBSweep2(a, b *AABB, aDelta, bDelta v.Vec, hit *HitInfo) bool {
 	delta := bDelta.Sub(aDelta)
-	isCollide := OverlapSweep(a, b, delta, hit)
+	isCollide := AABBAABBSweep1(a, b, delta, hit)
 	if isCollide {
 		hit.Pos = hit.Pos.Add(aDelta.Scale(hit.Time))
 		if hit.Normal.X != 0 {
@@ -192,208 +178,13 @@ func OverlapSweep2(a, b *AABB, aDelta, bDelta v.Vec, hit *HitInfo) bool {
 	return isCollide
 }
 
-// HitTileInfo stores information about a collision with a tile
-type HitTileInfo struct {
-	TileID     uint8       // ID of the collided tile
-	TileCoords image.Point // X,Y coordinates of the tile in the tilemap
-	Normal     v.Vec       // Normal vector of the collision (-1/0/1)
-}
+// AABBCircleSweep checks for collision between a moving AABB and a moving Circle.
+// Returns true if collision occurs during movement, false otherwise.
+func AABBCircleSweep(a *AABB, c *Circle, aDelta, cDelta v.Vec) bool {
+	// Calculate circle's movement relative to AABB (AABB becomes stationary reference frame)
+	relativeDelta := cDelta.Sub(aDelta)
 
-// Collider handles collision detection between rectangles and a 2D tilemap
-type Collider struct {
-	Collisions     []HitTileInfo // List of collisions from last check
-	CellSize       image.Point   // Width and height of tiles
-	TileMap        [][]uint8     // 2D grid of tile IDs
-	NonSolidTileID uint8         // Sets the ID of non-solid tiles. Defaults to 0.
-}
-
-// NewCollider creates a new tile collider with the given tilemap and tile dimensions
-func NewCollider(tileMap [][]uint8, tileWidth, tileHeight int) *Collider {
-	return &Collider{
-		TileMap:  tileMap,
-		CellSize: image.Point{tileWidth, tileHeight},
-	}
-}
-
-// CollisionCallback is called when collisions occur, receiving collision info and final movement
-type CollisionCallback func([]HitTileInfo, float64, float64)
-
-// Collide checks for collisions when moving a rectangle and returns the allowed movement
-func (c *Collider) Collide(rect AABB, delta v.Vec, onCollide CollisionCallback) v.Vec {
-	c.Collisions = c.Collisions[:0]
-
-	if delta.X == 0 && delta.Y == 0 {
-		return delta
-	}
-
-	if math.Abs(delta.X) > math.Abs(delta.Y) {
-		if delta.X != 0 {
-			delta.X = c.CollideX(&rect, delta.X)
-		}
-		if delta.Y != 0 {
-			rect.Pos.X += delta.X
-			delta.Y = c.CollideY(&rect, delta.Y)
-		}
-	} else {
-		if delta.Y != 0 {
-			delta.Y = c.CollideY(&rect, delta.Y)
-		}
-		if delta.X != 0 {
-
-			rect.Pos.Y += delta.Y
-			delta.X = c.CollideX(&rect, delta.X)
-		}
-	}
-
-	if onCollide != nil {
-		onCollide(c.Collisions, delta.X, delta.Y)
-	}
-
-	return delta
-}
-
-// CollideX checks for collisions along the X axis and returns the allowed X movement
-func (c *Collider) CollideX(rect *AABB, deltaX float64) float64 {
-	checkLimit := max(1, int(math.Ceil(math.Abs(deltaX)/float64(c.CellSize.Y)))+1)
-
-	rectTop := rect.Pos.Y - rect.Half.Y
-	rectBottom := rect.Pos.Y + rect.Half.Y
-
-	rectTileTopCoord := int(math.Floor(rectTop / float64(c.CellSize.Y)))
-	rectTileBottomCoord := int(math.Ceil((rectBottom)/float64(c.CellSize.Y))) - 1
-
-	if deltaX > 0 {
-		startRightX := int(math.Floor((rect.Pos.X + rect.Half.X) / float64(c.CellSize.X)))
-		endX := startRightX + checkLimit
-		endX = min(endX, len(c.TileMap[0]))
-
-		for y := rectTileTopCoord; y <= rectTileBottomCoord; y++ {
-			if y < 0 || y >= len(c.TileMap) {
-				continue
-			}
-			for x := startRightX; x < endX; x++ {
-				if x < 0 || x >= len(c.TileMap[0]) {
-					continue
-				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
-					tileLeft := float64(x * c.CellSize.X)
-					collision := tileLeft - (rect.Pos.X + rect.Half.X)
-					if collision <= deltaX {
-						deltaX = collision
-						c.Collisions = append(c.Collisions, HitTileInfo{
-							TileID:     c.TileMap[y][x],
-							TileCoords: image.Point{x, y},
-							Normal:     v.Left,
-						})
-					}
-				}
-			}
-		}
-	}
-
-	if deltaX < 0 {
-		rectLeft := rect.Pos.X - rect.Half.X
-
-		endX := int(math.Floor(rectLeft / float64(c.CellSize.X)))
-		startX := endX - checkLimit
-		startX = max(startX, 0)
-
-		for y := rectTileTopCoord; y <= rectTileBottomCoord; y++ {
-			if y < 0 || y >= len(c.TileMap) {
-				continue
-			}
-			for x := startX; x <= endX; x++ {
-				if x < 0 || x >= len(c.TileMap[0]) {
-					continue
-				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
-					tileRight := float64((x + 1) * c.CellSize.X)
-					collision := tileRight - rectLeft
-					if collision >= deltaX {
-						deltaX = collision
-						c.Collisions = append(c.Collisions, HitTileInfo{
-							TileID:     c.TileMap[y][x],
-							TileCoords: image.Point{x, y},
-							Normal:     v.Right,
-						})
-					}
-				}
-			}
-		}
-	}
-
-	return deltaX
-}
-
-// CollideY checks for collisions along the Y axis and returns the allowed Y movement
-func (c *Collider) CollideY(rect *AABB, deltaY float64) float64 {
-
-	checkLimit := max(1, int(math.Ceil(math.Abs(deltaY)/float64(c.CellSize.Y)))+1)
-
-	rectLeft := rect.Pos.X - rect.Half.X
-	rectRight := rect.Pos.X + rect.Half.X
-
-	rectTileLeftCoord := int(math.Floor(rectLeft / float64(c.CellSize.X)))
-	rectTileRightCoord := int(math.Ceil(rectRight/float64(c.CellSize.X))) - 1
-
-	if deltaY > 0 {
-		rectBottom := rect.Pos.Y + rect.Half.Y
-		startBottomY := int(math.Floor(rectBottom / float64(c.CellSize.Y)))
-		endY := startBottomY + checkLimit
-		endY = min(endY, len(c.TileMap))
-
-		for x := rectTileLeftCoord; x <= rectTileRightCoord; x++ {
-			if x < 0 || x >= len(c.TileMap[0]) {
-				continue
-			}
-			for y := startBottomY; y < endY; y++ {
-				if y < 0 || y >= len(c.TileMap) {
-					continue
-				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
-					tileTop := float64(y * c.CellSize.Y)
-					collision := tileTop - rectBottom
-					if collision <= deltaY {
-						deltaY = collision
-						c.Collisions = append(c.Collisions, HitTileInfo{
-							TileID:     c.TileMap[y][x],
-							TileCoords: image.Point{x, y},
-							Normal:     v.Up,
-						})
-					}
-				}
-			}
-		}
-	}
-
-	if deltaY < 0 {
-		rectTop := rect.Pos.Y - rect.Half.Y
-		endY := int(math.Floor(rectTop / float64(c.CellSize.Y)))
-		startY := endY - checkLimit
-		startY = max(startY, 0)
-
-		for x := rectTileLeftCoord; x <= rectTileRightCoord; x++ {
-			if x < 0 || x >= len(c.TileMap[0]) {
-				continue
-			}
-			for y := startY; y <= endY; y++ {
-				if y < 0 || y >= len(c.TileMap) {
-					continue
-				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
-					tileBottom := float64((y + 1) * c.CellSize.Y)
-					collision := tileBottom - rectTop
-					if collision >= deltaY {
-						deltaY = collision
-						c.Collisions = append(c.Collisions, HitTileInfo{
-							TileID:     c.TileMap[y][x],
-							TileCoords: image.Point{x, y},
-							Normal:     v.Down,
-						})
-					}
-				}
-			}
-		}
-	}
-	return deltaY
+	// Use Segment to check if circle (treated as point with radius padding) hits the AABB
+	// padding expands AABB by circle's radius to simplify collision detection
+	return AABBSegmentOverlap(a, c.Pos, relativeDelta, v.Vec{X: c.Radius, Y: c.Radius}, nil)
 }

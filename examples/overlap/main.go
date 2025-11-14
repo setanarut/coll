@@ -52,7 +52,7 @@ func (g *Game) Update() error {
 	box2.Pos = box2.Pos.Add(velocity)
 
 	hit = &coll.HitInfo{}
-	collided = coll.Overlap(box1, box2, hit)
+	collided = coll.AABBOverlap(box1, box2, hit)
 
 	box2.Pos = box2.Pos.Add(hit.Delta)
 
