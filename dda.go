@@ -3,6 +3,8 @@ package coll
 import (
 	"image"
 	"math"
+
+	"github.com/setanarut/v"
 )
 
 // HitRayInfo structure stores the result of the DDA (Digital Differential Analysis) raycast operation
@@ -10,11 +12,11 @@ type HitRayInfo struct {
 	// The distance from origin to the hit point
 	Distance float64
 	// The exact coordinates of where the ray hit
-	Point Vec
+	Point v.Vec
 	// The grid cell coordinates that were hit
 	Cell image.Point
 	// The surface normal at the hit point
-	Normal Vec
+	Normal v.Vec
 }
 
 // RaycastDDA performs the DDA (Digital Differential Analysis) algorithm to find intersections with a tile map
@@ -24,7 +26,7 @@ type HitRayInfo struct {
 //   - dir: Direction unit vector of the ray (should be normalized)
 //   - length: Maximum distance the ray can travel
 //   - tileMap: 2D grid of cells where any non-zero value represents a wall/obstacle
-func RaycastDDA(start, dir Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool {
+func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool {
 	// Bitiş noktasını hesapla
 	end := start.Add(dir.Scale(length))
 
@@ -33,7 +35,7 @@ func RaycastDDA(start, dir Vec, length float64, tileMap [][]uint8, cellSize floa
 	steps := int(max(math.Abs(delta.X), math.Abs(delta.Y)))
 
 	// Her adımdaki artış miktarı
-	var inc Vec
+	var inc v.Vec
 	if steps != 0 {
 		inc = delta.Scale(1.0 / float64(steps))
 	}
@@ -69,10 +71,10 @@ func RaycastDDA(start, dir Vec, length float64, tileMap [][]uint8, cellSize floa
 
 				if diffX > diffY {
 					// X yüzeyine çarpış
-					hit.Normal = Vec{X: -math.Copysign(1, dir.X), Y: 0}
+					hit.Normal = v.Vec{X: -math.Copysign(1, dir.X), Y: 0}
 				} else {
 					// Y yüzeyine çarpış
-					hit.Normal = Vec{X: 0, Y: -math.Copysign(1, dir.Y)}
+					hit.Normal = v.Vec{X: 0, Y: -math.Copysign(1, dir.Y)}
 				}
 
 				return true
@@ -90,6 +92,6 @@ func RaycastDDA(start, dir Vec, length float64, tileMap [][]uint8, cellSize floa
 	// 	Y: int(end.Y / cellSize),
 	// }
 	hit.Distance = length
-	hit.Normal = Vec{} // Sıfır vektör
+	hit.Normal = v.Vec{} // Sıfır vektör
 	return false
 }

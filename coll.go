@@ -7,13 +7,13 @@ import (
 	"github.com/setanarut/v"
 )
 
-type Vec = v.Vec
+// type v.Vec = v.v.Vec
 
 const EPSILON = 1e-8
 
 type AABB struct {
-	Pos  Vec
-	Half Vec
+	Pos  v.Vec
+	Half v.Vec
 }
 
 func (a *AABB) Left() float64       { return a.Pos.X - a.Half.X }
@@ -26,9 +26,9 @@ func (a *AABB) SetTop(t float64)    { a.Pos.Y = t + a.Half.Y }
 func (a *AABB) SetBottom(b float64) { a.Pos.Y = b - a.Half.Y }
 
 type HitInfo struct {
-	Pos    Vec
-	Delta  Vec
-	Normal Vec
+	Pos    v.Vec
+	Delta  v.Vec
+	Normal v.Vec
 	Time   float64
 }
 
@@ -38,14 +38,14 @@ func (h *HitInfo) Reset() {
 
 type HitInfo2 struct {
 	Right, Bottom, Left, Top bool
-	Delta                    Vec
+	Delta                    v.Vec
 }
 
 // AABBPlatform moving platform collision
-func AABBPlatform(a, platform *AABB, aVel, bVel Vec, h *HitInfo2) bool {
+func AABBPlatform(a, platform *AABB, aVel, bVel v.Vec, h *HitInfo2) bool {
 	// Calculate old positions using velocities
-	aOldPos := Vec{a.Pos.X - aVel.X, a.Pos.Y - aVel.Y}
-	bOldPos := Vec{platform.Pos.X - bVel.X, platform.Pos.Y - bVel.Y}
+	aOldPos := v.Vec{a.Pos.X - aVel.X, a.Pos.Y - aVel.Y}
+	bOldPos := v.Vec{platform.Pos.X - bVel.X, platform.Pos.Y - bVel.Y}
 
 	// Check collision at current positions using half dimensions
 	xDist := math.Abs(a.Pos.X - platform.Pos.X)
@@ -87,7 +87,7 @@ func AABBPlatform(a, platform *AABB, aVel, bVel Vec, h *HitInfo2) bool {
 
 	return true
 }
-func Segment(a *AABB, pos, delta, padding Vec, hit *HitInfo) bool {
+func Segment(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
 	scale := v.One.Div(delta)
 	signX := math.Copysign(1, scale.X)
 	signY := math.Copysign(1, scale.Y)
@@ -164,7 +164,7 @@ func Overlap(a, b *AABB, hit *HitInfo) bool {
 }
 
 // OverlapSweep returns hit info for b
-func OverlapSweep(staticA, b *AABB, bDelta Vec, hit *HitInfo) bool {
+func OverlapSweep(staticA, b *AABB, bDelta v.Vec, hit *HitInfo) bool {
 	if bDelta.IsZero() {
 		return Overlap(staticA, b, hit)
 	}
@@ -179,7 +179,7 @@ func OverlapSweep(staticA, b *AABB, bDelta Vec, hit *HitInfo) bool {
 }
 
 // OverlapSweep2 returns hit info for b
-func OverlapSweep2(a, b *AABB, aDelta, bDelta Vec, hit *HitInfo) bool {
+func OverlapSweep2(a, b *AABB, aDelta, bDelta v.Vec, hit *HitInfo) bool {
 	delta := bDelta.Sub(aDelta)
 	isCollide := OverlapSweep(a, b, delta, hit)
 	if isCollide {
@@ -197,7 +197,7 @@ func OverlapSweep2(a, b *AABB, aDelta, bDelta Vec, hit *HitInfo) bool {
 type HitTileInfo struct {
 	TileID     uint8       // ID of the collided tile
 	TileCoords image.Point // X,Y coordinates of the tile in the tilemap
-	Normal     Vec         // Normal vector of the collision (-1/0/1)
+	Normal     v.Vec       // Normal vector of the collision (-1/0/1)
 }
 
 // Collider handles collision detection between rectangles and a 2D tilemap
@@ -220,7 +220,7 @@ func NewCollider(tileMap [][]uint8, tileWidth, tileHeight int) *Collider {
 type CollisionCallback func([]HitTileInfo, float64, float64)
 
 // Collide checks for collisions when moving a rectangle and returns the allowed movement
-func (c *Collider) Collide(rect AABB, delta Vec, onCollide CollisionCallback) Vec {
+func (c *Collider) Collide(rect AABB, delta v.Vec, onCollide CollisionCallback) v.Vec {
 	c.Collisions = c.Collisions[:0]
 
 	if delta.X == 0 && delta.Y == 0 {

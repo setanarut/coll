@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Vec = coll.Vec
+type Vec = v.Vec
 type AABB = coll.AABB
 
 var a = &AABB{
@@ -41,7 +42,7 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	av := coll.Vec{2, 0}
+	av := v.Vec{2, 0}
 	bv := Axis().Scale(6)
 	hit.Reset()
 

@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Vec = coll.Vec
+type Vec = v.Vec
 type AABB = coll.AABB
 
 var box1 = AABB{
@@ -47,7 +48,7 @@ func (g *Game) Update() error {
 	delta := cursor.Sub(pos)
 
 	hit = &coll.HitInfo{}
-	collided = coll.Segment(&box1, pos, delta, coll.Vec{}, hit)
+	collided = coll.Segment(&box1, pos, delta, v.Vec{}, hit)
 
 	return nil
 }
@@ -71,7 +72,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	)
 	px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
 	nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
-	vector.DrawFilledCircle(s, px, py, 2, colornames.Yellow, true)
+	vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
 	vector.StrokeLine(s, float32(pos.X), float32(pos.Y), float32(cursor.X), float32(cursor.Y), 1, colour, true)
 	vector.StrokeLine(s, px, py, nx, ny, 1, colornames.Yellow, true)
 

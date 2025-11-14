@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Vec = coll.Vec
+type Vec = v.Vec
 type AABB = coll.AABB
 
 var box1 = &AABB{

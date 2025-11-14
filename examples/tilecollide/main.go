@@ -9,9 +9,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/v"
 )
 
-type Vec = coll.Vec
+type Vec = v.Vec
 type AABB = coll.AABB
 
 const (
@@ -65,7 +66,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for y := range len(TileMap) {
 		for x := range len(TileMap[y]) {
 			if TileMap[y][x] != 0 {
-				vector.DrawFilledRect(screen,
+				vector.FillRect(screen,
 					float32(x*collider.CellSize.X),
 					float32(y*collider.CellSize.Y),
 					float32(collider.CellSize.X),
@@ -77,7 +78,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	// Draw player
-	vector.DrawFilledRect(screen,
+	vector.FillRect(screen,
 		float32(rect.Pos.X-rect.Half.X),
 		float32(rect.Pos.Y-rect.Half.Y),
 		float32(2*rect.Half.X),
