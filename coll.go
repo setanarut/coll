@@ -1,3 +1,4 @@
+// 2D Collision functions
 package coll
 
 import (
@@ -6,8 +7,6 @@ import (
 
 	"github.com/setanarut/v"
 )
-
-// type v.Vec = v.v.Vec
 
 const EPSILON = 1e-8
 

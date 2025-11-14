@@ -73,8 +73,8 @@ func (g *Game) Draw(s *ebiten.Image) {
 	px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
 	nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
 	vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
-	vector.StrokeLine(s, float32(pos.X), float32(pos.Y), float32(cursor.X), float32(cursor.Y), 1, colour, true)
-	vector.StrokeLine(s, px, py, nx, ny, 1, colornames.Yellow, true)
+	vector.StrokeLine(s, float32(pos.X), float32(pos.Y), float32(cursor.X), float32(cursor.Y), 2, colour, true)
+	vector.StrokeLine(s, px, py, nx, ny, 2, colornames.Yellow, true)
 
 	ebitenutil.DebugPrint(s, fmt.Sprintf(
 		"Pos: %v Delta: %v Normal: %v Time: %v ",
