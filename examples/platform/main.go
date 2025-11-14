@@ -103,8 +103,8 @@ func (g *Game) Update() error {
 
 // Draw renders the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
-	DrawRect(screen, rect1.Left(), rect1.Top(), rect1.Half.X*2, rect1.Half.Y*2) //player
-	DrawRect(screen, plat.Left(), plat.Top(), plat.Half.X*2, plat.Half.Y*2)     // platform
+	DrawAABB(screen, rect1) // player
+	DrawAABB(screen, plat)  // platform
 
 }
 
@@ -121,6 +121,6 @@ func main() {
 	}
 }
 
-func DrawRect(dst *ebiten.Image, x, y, width, height float64) {
-	vector.StrokeRect(dst, float32(x), float32(y), float32(width), float32(height), 1, color.Gray{200}, false)
+func DrawAABB(dst *ebiten.Image, box *AABB) {
+	vector.StrokeRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), 1, color.Gray{200}, false)
 }
