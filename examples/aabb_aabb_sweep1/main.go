@@ -9,27 +9,25 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
 )
 
-type Vec = v.Vec
-type AABB = coll.AABB
-
-var box1 = &AABB{
-	Pos:  Vec{400, 250},
-	Half: Vec{60, 20},
+var box1 = &coll.AABB{
+	Pos:  v.Vec{400, 250},
+	Half: v.Vec{60, 20},
 }
-var box2 = &AABB{
-	Pos:  Vec{0, 0},
-	Half: Vec{12, 12},
+var box2 = &coll.AABB{
+	Pos:  v.Vec{0, 0},
+	Half: v.Vec{12, 12},
 }
 
 var hit = &coll.HitInfo{}
 
 var collided bool
-var vel = Vec{}
-var cursor = Vec{}
+var vel = v.Vec{}
+var cursor = v.Vec{}
 
 func main() {
 	g := &Game{W: 800, H: 500}
@@ -43,20 +41,32 @@ type Game struct {
 	W, H float64
 }
 
+var slidingEnabled = true
+
 func (g *Game) Update() error {
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		slidingEnabled = !slidingEnabled
+	}
+
 	curX, curY := ebiten.CursorPosition()
-	cursor = Vec{float64(curX), float64(curY)}
+	cursor = v.Vec{float64(curX), float64(curY)}
 
 	vel = cursor.Sub(box2.Pos)
 
 	collided = coll.AABBAABBSweep1(box1, box2, vel, hit)
 
 	if collided {
-		vel = vel.Add(hit.Delta)
-
+		if slidingEnabled {
+			box2.Pos = box2.Pos.Add(vel.Scale(hit.Time))
+			remainingVel := vel.Scale(1.0 - hit.Time)
+			vel = remainingVel.Sub(hit.Normal.Scale(remainingVel.Dot(hit.Normal)))
+		} else {
+			vel = vel.Add(hit.Delta)
+		}
 	}
-	box2.Pos = box2.Pos.Add(vel)
 
+	box2.Pos = box2.Pos.Add(vel)
 	return nil
 }
 

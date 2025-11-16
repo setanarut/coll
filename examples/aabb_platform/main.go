@@ -66,7 +66,7 @@ func (g *Game) Update() error {
 		box.Pos.X += hit.Delta.X
 		box.Pos.Y += hit.Delta.Y
 
-		if !hit.Top {
+		if hit.Top {
 			boxVelocity.Y = 0 // Reset vertical velocity
 		}
 	}
