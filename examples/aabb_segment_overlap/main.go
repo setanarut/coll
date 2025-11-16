@@ -13,25 +13,20 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type Vec = v.Vec
-type AABB = coll.AABB
-
-var box1 = AABB{
-	Pos:  Vec{100, 100},
-	Half: Vec{16, 16},
-}
-var box2 = AABB{
-	Pos:  Vec{0, 0},
-	Half: Vec{16, 16},
+var box = coll.AABB{
+	Pos:  v.Vec{250, 250},
+	Half: v.Vec{50, 50},
 }
 
 var hit = &coll.HitInfo{}
-
 var collided bool
-var vel = Vec{2, 2}
+
+var pos = v.Vec{50, 50}
+var cursor = v.Vec{}
 
 func main() {
-	g := &Game{W: 900, H: 500}
+	g := &Game{W: 500, H: 500}
+
 	ebiten.SetWindowSize(int(g.W), int(g.H))
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
@@ -44,14 +39,13 @@ type Game struct {
 
 func (g *Game) Update() error {
 
-	hit = &coll.HitInfo{}
-	collided = coll.AABBAABBSweep1(&box1, &box2, vel, hit)
+	curX, curY := ebiten.CursorPosition()
+	cursor = v.Vec{float64(curX), float64(curY)}
 
-	// if collided {
-	// 	vel = vel.Mul(hit.Normal.Rotate(-math.Pi / 2))
-	// }
-	delta := vel.Add(hit.Delta)
-	box2.Pos = box2.Pos.Add(delta)
+	delta := cursor.Sub(pos)
+
+	hit.Reset()
+	collided = coll.AABBSegmentOverlap(&box, pos, delta, v.Vec{}, hit)
 
 	return nil
 }
@@ -65,25 +59,20 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 	vector.StrokeRect(
 		s,
-		float32(box1.Pos.X-box1.Half.X),
-		float32(box1.Pos.Y-box1.Half.Y),
-		float32(box1.Half.X*2),
-		float32(box1.Half.Y*2),
+		float32(box.Left()),
+		float32(box.Top()),
+		float32(box.Half.X*2),
+		float32(box.Half.Y*2),
 		1,
 		colornames.Gray,
 		false,
 	)
+	px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
+	nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
+	vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
+	vector.StrokeLine(s, float32(pos.X), float32(pos.Y), float32(cursor.X), float32(cursor.Y), 2, colour, true)
+	vector.StrokeLine(s, px, py, nx, ny, 2, colornames.Yellow, true)
 
-	vector.StrokeRect(
-		s,
-		float32(box2.Pos.X-box2.Half.X),
-		float32(box2.Pos.Y-box2.Half.Y),
-		float32(box2.Half.X*2),
-		float32(box2.Half.Y*2),
-		1,
-		colour,
-		false,
-	)
 	ebitenutil.DebugPrint(s, fmt.Sprintf(
 		"Pos: %v Delta: %v Normal: %v Time: %v ",
 		hit.Pos,
@@ -95,8 +84,4 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 func (g *Game) Layout(w, h int) (int, int) {
 	return 500, 500
-}
-
-func (g *Game) LayoutF(w, h float64) (float64, float64) {
-	return g.W, g.H
 }

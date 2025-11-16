@@ -18,7 +18,7 @@ const (
 	screenWidth  = 854
 	screenHeight = 480
 	gravity      = 1.0
-	friction     = 0.9
+	damping      = 0.9
 )
 
 var (
@@ -50,8 +50,8 @@ func (g *Game) Update() error {
 
 	// Apply gravity and friction
 	boxVelocity.Y += gravity
-	boxVelocity.X *= friction
-	boxVelocity.Y *= friction
+	boxVelocity.X *= damping
+	boxVelocity.Y *= damping
 
 	// Update position
 	box.Pos.X += boxVelocity.X
@@ -61,23 +61,13 @@ func (g *Game) Update() error {
 	platform.Pos.Y += platformVelocity.Y
 
 	// Collision check
-	*hit = coll.HitInfo2{}
+	hit.Reset()
 	if coll.AABBPlatform(box, platform, boxVelocity, platformVelocity, hit) {
+		box.Pos.X += hit.Delta.X
+		box.Pos.Y += hit.Delta.Y
 
 		if !hit.Top {
-			// Adjust position on collision
-			box.Pos.X += hit.Delta.X
-			box.Pos.Y += hit.Delta.Y
-		}
-
-		if hit.Top {
-			// boxVelocity.Y = 0 // Reset vertical velocity
-		}
-		if hit.Bottom {
-		}
-		if hit.Right {
-		}
-		if hit.Left {
+			boxVelocity.Y = 0 // Reset vertical velocity
 		}
 	}
 

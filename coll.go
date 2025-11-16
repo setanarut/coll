@@ -9,20 +9,30 @@ import (
 
 const EPSILON = 1e-8
 
+// HitInfo holds the detailed information about a collision or contact event.
 type HitInfo struct {
-	Pos    v.Vec
-	Delta  v.Vec
-	Normal v.Vec
-	Time   float64
+	Pos    v.Vec   // The position where the collision occurred (contact point).
+	Delta  v.Vec   // The remaining movement vector after the collision.
+	Normal v.Vec   // The normal vector of the surface hit.
+	Time   float64 // The time (0.0 to 1.0) along the movement path when the collision happened.
 }
 
+// HitInfo2 tracks which sides of an AABB (Box) were contacted.
 type HitInfo2 struct {
+	// Flags indicating which side of the bounding box was hit.
 	Right, Bottom, Left, Top bool
-	Delta                    v.Vec
+	// The remaining movement vector after the collision.
+	Delta v.Vec
 }
 
+// Resets the HitInfo struct to its zero values.
 func (h *HitInfo) Reset() {
-	*h = HitInfo{}
+	*h = HitInfo{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
+}
+
+// Resets the HitInfo struct to its zero values.
+func (h *HitInfo2) Reset() {
+	*h = HitInfo2{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
 }
 
 // AABBPlatform returns hit info for a. Does not prevent collision tunneling, a slides along the platform edges.
@@ -72,14 +82,23 @@ func AABBPlatform(a, platform *AABB, aVel, platformVel v.Vec, h *HitInfo2) bool 
 	return true
 }
 
-func AABBSegmentOverlap(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
+// AABBSegmentOverlap returns true if they intersect, false otherwise
+//
+// Params:
+//
+//   - box - Bounding box to check
+//   - pos - Line segment origin/start position
+//   - delta - Line segment move/displacement vector
+//   - padding - Padding added to the radius of the bounding box
+//   - hit - Physics contact info. Filled when argument isn't nil and a collision occurs
+func AABBSegmentOverlap(box *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
 	scale := v.One.Div(delta)
 	signX := math.Copysign(1, scale.X)
 	signY := math.Copysign(1, scale.Y)
-	nearTimeX := (a.Pos.X - signX*(a.Half.X+padding.X) - pos.X) * scale.X
-	nearTimeY := (a.Pos.Y - signY*(a.Half.Y+padding.Y) - pos.Y) * scale.Y
-	farTimeX := (a.Pos.X + signX*(a.Half.X+padding.X) - pos.X) * scale.X
-	farTimeY := (a.Pos.Y + signY*(a.Half.Y+padding.Y) - pos.Y) * scale.Y
+	nearTimeX := (box.Pos.X - signX*(box.Half.X+padding.X) - pos.X) * scale.X
+	nearTimeY := (box.Pos.Y - signY*(box.Half.Y+padding.Y) - pos.Y) * scale.Y
+	farTimeX := (box.Pos.X + signX*(box.Half.X+padding.X) - pos.X) * scale.X
+	farTimeY := (box.Pos.Y + signY*(box.Half.Y+padding.Y) - pos.Y) * scale.Y
 	if math.IsNaN(nearTimeY) {
 		nearTimeY = math.Inf(1)
 	}
@@ -113,7 +132,19 @@ func AABBSegmentOverlap(a *AABB, pos, delta, padding v.Vec, hit *HitInfo) bool {
 	return true
 }
 
-// OverlapSweep returns hit info for b
+// AABBOverlap returns true if they intersect, false otherwise
+// https://noonat.github.io/intersect/#aabb-vs-aabb
+//
+// This test uses a separating axis test, which checks for overlaps between the
+// two boxes on each axis. If either axis is not overlapping, the boxes aren’t colliding.
+//
+// The function fills a *HitInfo object, and gives the axis of least overlap as the contact point.
+//
+// That is, it sets hit.Delta so that the colliding box will be pushed out of the nearest edge
+// This can cause weird behavior for moving boxes, so you should use sweepAABB
+// instead for moving boxes.
+//
+// If collision information is not needed, the hit argument can be set to nil for performance.
 func AABBOverlap(a, b *AABB, hit *HitInfo) bool {
 	dx := b.Pos.X - a.Pos.X
 	px := b.Half.X + a.Half.X - math.Abs(dx)
@@ -148,31 +179,53 @@ func AABBOverlap(a, b *AABB, hit *HitInfo) bool {
 	return true
 }
 
-// AABBAABBSweep1 returns hit info for dynamicB
-func AABBAABBSweep1(staticA, dynamicB *AABB, bDelta v.Vec, hit *HitInfo) bool {
-	if bDelta.IsZero() {
-		return AABBOverlap(staticA, dynamicB, hit)
+// AABBAABBSweep1 finds the intersection of this box (a) and another moving box (b),
+// where the delta argument is the displacement vector of the moving box (b).
+// https://noonat.github.io/intersect/#aabb-vs-swept-aabb
+//
+// returns bool true if the two AABBs collide, false otherwise
+//
+// Params:
+//   - a - The static box
+//   - b - The moving box
+//   - delta - The displacement vector of b
+//   - hit - The contact object. Filled if collision occurs
+//
+// If collision information is not needed, the hit argument can be set to nil for performance.
+func AABBAABBSweep1(a, b *AABB, delta v.Vec, hit *HitInfo) bool {
+	if delta.IsZero() {
+		return AABBOverlap(a, b, hit)
 	}
-	result := AABBSegmentOverlap(staticA, dynamicB.Pos, bDelta, dynamicB.Half, hit)
+	result := AABBSegmentOverlap(a, b.Pos, delta, b.Half, hit)
 	if result {
 		hit.Time = max(0, min(1, hit.Time))
-		direction := bDelta.Unit()
-		hit.Pos.X = max(staticA.Pos.X-staticA.Half.X, min(staticA.Pos.X+staticA.Half.X, hit.Pos.X+direction.X*dynamicB.Half.X))
-		hit.Pos.Y = max(hit.Pos.Y+direction.Y*dynamicB.Half.Y, min(staticA.Pos.Y-staticA.Half.Y, staticA.Pos.Y+staticA.Half.Y))
+		direction := delta.Unit()
+		hit.Pos.X = max(a.Pos.X-a.Half.X, min(a.Pos.X+a.Half.X, hit.Pos.X+direction.X*b.Half.X))
+		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(a.Pos.Y-a.Half.Y, a.Pos.Y+a.Half.Y))
 	}
 	return result
 }
 
-// AABBAABBSweep2 returns hit info for b
-func AABBAABBSweep2(a, b *AABB, aDelta, bDelta v.Vec, hit *HitInfo) bool {
-	delta := bDelta.Sub(aDelta)
+// AABBAABBSweep2 Sweep two moving AABBs to see if and when they first and last were overlapping.
+// https://www.gamedeveloper.com/disciplines/simple-intersection-tests-for-games
+//
+// Params:
+//   - a - previous state of AABB a
+//   - b - previous state of AABB b
+//   - aV - displacment vector of a
+//   - bV - displacement vector of b
+//   - hit - The contact object. Filled if collision occurs
+//
+// If collision information is not needed, the hit argument can be set to nil for performance.
+func AABBAABBSweep2(a, b *AABB, aV, bV v.Vec, hit *HitInfo) bool {
+	delta := bV.Sub(aV)
 	isCollide := AABBAABBSweep1(a, b, delta, hit)
 	if isCollide {
-		hit.Pos = hit.Pos.Add(aDelta.Scale(hit.Time))
+		hit.Pos = hit.Pos.Add(aV.Scale(hit.Time))
 		if hit.Normal.X != 0 {
-			hit.Pos.X = b.Pos.X + (bDelta.X * hit.Time) - (hit.Normal.X * b.Half.X)
+			hit.Pos.X = b.Pos.X + (bV.X * hit.Time) - (hit.Normal.X * b.Half.X)
 		} else {
-			hit.Pos.Y = b.Pos.Y + (bDelta.Y * hit.Time) - (hit.Normal.Y * b.Half.Y)
+			hit.Pos.Y = b.Pos.Y + (bV.Y * hit.Time) - (hit.Normal.Y * b.Half.Y)
 		}
 	}
 	return isCollide
