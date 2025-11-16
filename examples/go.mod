@@ -4,7 +4,7 @@ go 1.25.4
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.9.4
-	github.com/setanarut/coll v1.1.0
+	github.com/setanarut/coll v1.1.1
 	github.com/setanarut/v v1.2.1
 	golang.org/x/image v0.33.0
 )
