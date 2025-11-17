@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	box            = coll.NewAABB(0, 0, 16, 16)
+	box            = coll.NewAABB(250, 100, 16, 16)
 	wall           = coll.NewAABB(250, 250, 16*4, 16)
 	hit            = &coll.HitInfo{}
 	wallVelocity   = v.Vec{X: 3}
@@ -43,14 +43,19 @@ func (g *Game) Update() error {
 	}
 
 	hit.Reset()
-	wall.Pos = wall.Pos.Add(wallVelocity)
 	collided = coll.AABBAABBSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
 		if slidingEnabled {
 			boxVelocity = examples.CalculateSlideVelocity(box, boxVelocity, hit)
+			box.Pos = box.Pos.Add(boxVelocity)
+			wall.Pos = wall.Pos.Add(wallVelocity.Scale(hit.Time))
 		} else {
-			boxVelocity = boxVelocity.Add(hit.Delta)
+			box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
+			wall.Pos = wall.Pos.Add(wallVelocity.Scale(hit.Time))
 		}
+	} else {
+		box.Pos = box.Pos.Add(boxVelocity)
+		wall.Pos = wall.Pos.Add(wallVelocity)
 	}
 
 	if wall.Right() > 500 {
@@ -60,7 +65,6 @@ func (g *Game) Update() error {
 		wallVelocity = wallVelocity.NegX()
 	}
 
-	box.Pos = box.Pos.Add(boxVelocity)
 	return nil
 }
 
@@ -72,11 +76,10 @@ func (g *Game) Draw(s *ebiten.Image) {
 	} else {
 		examples.StrokeAABB(s, box, colornames.Green)
 	}
-	examples.PrintHitInfoAt(s, hit, 10, 100)
 	ebitenutil.DebugPrintAt(
 		s,
 		fmt.Sprintf(
-			"Sliding Enabled: %v (Press S)\nVel: %v\nBoxPos: %v",
+			"WASD = Move\nTab = Enabled/Disable Sliding (%v)\naVel: %v\nBoxPos: %v",
 			slidingEnabled,
 			boxVelocity,
 			box.Pos,
@@ -84,6 +87,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		10,
 		10,
 	)
+	examples.PrintHitInfoAt(s, hit, 10, 100)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {

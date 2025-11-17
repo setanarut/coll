@@ -72,7 +72,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		examples.StrokeAABB(s, box, colornames.Green)
 	}
 	examples.PrintHitInfoAt(s, hit, 10, 30)
-	ebitenutil.DebugPrintAt(s, fmt.Sprintf("Sliding Enabled: %v (Press S)", slidingEnabled), 10, 10)
+	ebitenutil.DebugPrintAt(s, fmt.Sprintf("Sliding Enabled: %v (Press Tab)", slidingEnabled), 10, 10)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
