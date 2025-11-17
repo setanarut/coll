@@ -1,6 +1,8 @@
 package coll
 
-import "github.com/setanarut/v" // External package for the Vector (Vec) type.
+import (
+	"github.com/setanarut/v"
+) // External package for the Vector (Vec) type.
 
 // AABB represents an Axis-Aligned Bounding Box.
 type AABB struct {
@@ -38,12 +40,18 @@ func (a *AABB) Width() float64 { return a.Half.X * 2 }
 // Returns the total height (Y dimension) of the box.
 func (a *AABB) Height() float64 { return a.Half.Y * 2 }
 
+// NewAABB returns new AABB
+func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
+	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
+}
+
 // Circle represents a circular bounding volume.
 type Circle struct {
 	Pos    v.Vec   // Center position of the circle.
 	Radius float64 // The radius of the circle.
 }
 
-func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
-	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
+// NewCircle returns new Circle
+func NewCircle(x, y, radius float64) *Circle {
+	return &Circle{Pos: v.Vec{x, y}, Radius: radius}
 }
