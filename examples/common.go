@@ -59,3 +59,19 @@ func PrintHitInfoAt(dst *ebiten.Image, hit *coll.HitInfo, x, y int) {
 		y,
 	)
 }
+
+func Axis() (axis v.Vec) {
+	if ebiten.IsKeyPressed(ebiten.KeyW) {
+		axis.Y -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
+		axis.Y += 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyA) {
+		axis.X -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyD) {
+		axis.X += 1
+	}
+	return
+}

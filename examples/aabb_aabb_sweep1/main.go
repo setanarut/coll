@@ -38,7 +38,7 @@ type Game struct {
 func (g *Game) Update() error {
 	cursorPosition = examples.CursorPos()
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		slidingEnabled = !slidingEnabled
 	}
 	velocity = cursorPosition.Sub(box.Pos)
@@ -67,7 +67,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	ebitenutil.DebugPrintAt(
 		s,
 		fmt.Sprintf(
-			"Sliding Enabled: %v (Press S)\nVel: %v\nBoxPos: %v",
+			"Sliding Enabled: %v (Press Tab)\nVel: %v\nBoxPos: %v",
 			slidingEnabled,
 			velocity,
 			box.Pos,

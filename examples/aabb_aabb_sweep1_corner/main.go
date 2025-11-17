@@ -35,7 +35,7 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		slidingEnabled = !slidingEnabled
 	}
 

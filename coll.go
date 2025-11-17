@@ -206,7 +206,9 @@ func AABBAABBSweep1(a, b *AABB, delta v.Vec, hit *HitInfo) bool {
 	return result
 }
 
-// AABBAABBSweep2 Sweep two moving AABBs to see if and when they first and last were overlapping.
+// AABBAABBSweep2 returns hit info for b
+//
+// Sweep two moving AABBs to see if and when they first and last were overlapping.
 // https://www.gamedeveloper.com/disciplines/simple-intersection-tests-for-games
 //
 // Params:
