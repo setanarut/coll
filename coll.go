@@ -198,7 +198,7 @@ func AABBAABBSweep1(a, b *AABB, delta v.Vec, hit *HitInfo) bool {
 	}
 	result := AABBSegmentOverlap(a, b.Pos, delta, b.Half, hit)
 	if result {
-		hit.Time = max(0, min(1, hit.Time))
+		hit.Time = max(0, min(1, hit.Time-Epsilon))
 		direction := delta.Unit()
 		hit.Pos.X = max(a.Left(), min(a.Right(), hit.Pos.X+direction.X*b.Half.X))
 		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(a.Top(), a.Bottom()))

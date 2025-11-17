@@ -41,17 +41,23 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		slidingEnabled = !slidingEnabled
 	}
+
 	velocity = cursorPosition.Sub(box.Pos)
+
 	hit.Reset()
 	collided = coll.AABBAABBSweep1(wall, box, velocity, hit)
+
 	if collided {
 		if slidingEnabled {
-			velocity = examples.CalculateSlideVelocity(box, velocity, hit)
+			newVel := examples.CalculateSlideVelocity(box, velocity, hit) // Sliding correction
+			box.Pos = box.Pos.Add(newVel)
 		} else {
-			velocity = velocity.Add(hit.Delta)
+			newVel := velocity.Scale(hit.Time) // or velocity.Add(hit.Delta)
+			box.Pos = box.Pos.Add(newVel)
 		}
+	} else {
+		box.Pos = box.Pos.Add(velocity)
 	}
-	box.Pos = box.Pos.Add(velocity)
 	return nil
 }
 
