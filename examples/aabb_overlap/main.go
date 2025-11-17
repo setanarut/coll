@@ -13,8 +13,8 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-var wall = &coll.AABB{Pos: v.Vec{250, 250}, Half: v.Vec{100, 25}}
-var box = &coll.AABB{Pos: v.Vec{200, 200}, Half: v.Vec{25, 25}}
+var wall = coll.NewAABB(250, 250, 100, 25)
+var box = coll.NewAABB(200, 200, 25, 25)
 
 var hit = &coll.HitInfo{}
 
@@ -35,10 +35,7 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-
-	curX, curY := ebiten.CursorPosition()
-	cursor = v.Vec{float64(curX), float64(curY)}
-
+	cursor = examples.CursorPos()
 	velocity = cursor.Sub(box.Pos)
 	box.Pos = box.Pos.Add(velocity)
 
@@ -46,7 +43,6 @@ func (g *Game) Update() error {
 	collided = coll.AABBOverlap(wall, box, hit)
 
 	box.Pos = box.Pos.Add(hit.Delta)
-
 	return nil
 }
 
@@ -63,11 +59,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 	ebitenutil.DebugPrintAt(
 		s,
-		fmt.Sprintf(
-			"Vel: %v\nBoxPos: %v",
-			velocity,
-			box.Pos,
-		),
+		fmt.Sprintf("Vel: %v\nBoxPos: %v", velocity, box.Pos),
 		10,
 		100,
 	)
