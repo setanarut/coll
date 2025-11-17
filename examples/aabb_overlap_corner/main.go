@@ -42,8 +42,6 @@ func (g *Game) Update() error {
 	coll.AABBOverlap(&wall, &box, hit)
 
 	box.Pos = box.Pos.Add(hit.Delta)
-
-	// velocity = velocity.Add(hit.Delta)
 	return nil
 }
 

@@ -53,6 +53,14 @@ func PrintHitInfoAt(dst *ebiten.Image, hit *coll.HitInfo, x, y int) {
 		y,
 	)
 }
+func PrintHitInfoAt2(dst *ebiten.Image, hit *coll.HitInfo2, x, y int) {
+	ebitenutil.DebugPrintAt(
+		dst,
+		fmt.Sprintf("Hit Info: %v", hit),
+		x,
+		y,
+	)
+}
 
 func Axis() (axis v.Vec) {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {

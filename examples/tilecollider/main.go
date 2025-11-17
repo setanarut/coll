@@ -9,6 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
 )
 
@@ -43,7 +44,7 @@ type Game struct {
 func (g *Game) Update() error {
 
 	// Get input axis
-	vel := Axis()
+	vel := examples.Axis()
 	vel.Y *= 6
 	vel.X *= 6
 
@@ -94,6 +95,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			), 20, 20+(i*20))
 	}
 
+	ebitenutil.DebugPrint(screen, "Controls: WASD")
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -105,20 +108,4 @@ func main() {
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func Axis() (axis v.Vec) {
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		axis.Y -= 1
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		axis.Y += 1
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		axis.X -= 1
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		axis.X += 1
-	}
-	return
 }
