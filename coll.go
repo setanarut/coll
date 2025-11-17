@@ -35,6 +35,23 @@ func (h *HitInfo2) Reset() {
 	*h = HitInfo2{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
 }
 
+// AABBAABBContain returns true if a fully contains b (b is fully inside of the bounds of a).
+func AABBAABBContain(a, b *AABB) bool {
+	if b.Left() < a.Left() {
+		return false
+	}
+	if b.Right() > a.Right() {
+		return false
+	}
+	if b.Top() < a.Top() {
+		return false
+	}
+	if b.Bottom() > a.Bottom() {
+		return false
+	}
+	return true
+}
+
 // AABBAABBSlide performs swept AABB collision detection
 // between two moving boxes and calculates collision response information.
 //

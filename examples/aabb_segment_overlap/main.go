@@ -1,85 +1,57 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/setanarut/coll"
+	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
 )
 
-var box = coll.AABB{
-	Pos:  v.Vec{250, 250},
-	Half: v.Vec{50, 50},
-}
-
-var hit = &coll.HitInfo{}
-var collided bool
-
-var pos = v.Vec{50, 50}
-var cursor = v.Vec{}
+var (
+	box               = coll.NewAABB(250, 250, 50, 50)
+	bodHitInfo        = &coll.HitInfo{}
+	collided          bool
+	segmentStartPoint = v.Vec{50, 50}
+	cursor            = v.Vec{}
+)
 
 func main() {
-	g := &Game{W: 500, H: 500}
-
-	ebiten.SetWindowSize(int(g.W), int(g.H))
+	g := &Game{}
+	ebiten.SetWindowSize(500, 500)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }
 
-type Game struct {
-	W, H float64
-}
+type Game struct{}
 
 func (g *Game) Update() error {
-
-	curX, curY := ebiten.CursorPosition()
-	cursor = v.Vec{float64(curX), float64(curY)}
-
-	delta := cursor.Sub(pos)
-
-	hit.Reset()
-	collided = coll.AABBSegmentOverlap(&box, pos, delta, v.Vec{}, hit)
-
+	cursor = examples.CursorPos()
+	bodHitInfo.Reset()
+	collided = coll.AABBSegmentOverlap(
+		box,
+		segmentStartPoint,
+		cursor,
+		v.Vec{},
+		bodHitInfo,
+	)
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-
 	colour := colornames.Green
 	if collided {
 		colour = colornames.Yellow
 	}
-
-	vector.StrokeRect(
-		s,
-		float32(box.Left()),
-		float32(box.Top()),
-		float32(box.Half.X*2),
-		float32(box.Half.Y*2),
-		1,
-		colornames.Gray,
-		false,
-	)
-	px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
-	nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
-	vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
-	vector.StrokeLine(s, float32(pos.X), float32(pos.Y), float32(cursor.X), float32(cursor.Y), 2, colour, true)
-	vector.StrokeLine(s, px, py, nx, ny, 2, colornames.Yellow, true)
-
-	ebitenutil.DebugPrint(s, fmt.Sprintf(
-		"Pos: %v Delta: %v Normal: %v Time: %v ",
-		hit.Pos,
-		hit.Delta,
-		hit.Normal,
-		hit.Time,
-	))
+	examples.StrokeAABB(s, box, colornames.Gray)
+	examples.DrawHitInfo(s, bodHitInfo)
+	vector.StrokeLine(s, float32(segmentStartPoint.X), float32(segmentStartPoint.Y), float32(cursor.X), float32(cursor.Y), 2, colour, true)
+	examples.PrintHitInfoAt(s, bodHitInfo, 10, 10)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
