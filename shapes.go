@@ -43,3 +43,7 @@ type Circle struct {
 	Pos    v.Vec   // Center position of the circle.
 	Radius float64 // The radius of the circle.
 }
+
+func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
+	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
+}

@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
+	"golang.org/x/image/colornames"
 )
 
 type AABB = coll.AABB
@@ -87,8 +87,8 @@ func (g *Game) Update() error {
 
 // Draw renders the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
-	DrawAABB(screen, box)      // player
-	DrawAABB(screen, platform) // platform
+	examples.StrokeAABB(screen, box, colornames.Gray)      // player
+	examples.StrokeAABB(screen, platform, colornames.Gray) // platform
 
 }
 
@@ -103,10 +103,6 @@ func main() {
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}
-}
-
-func DrawAABB(dst *ebiten.Image, box *AABB) {
-	vector.StrokeRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), 1, color.Gray{200}, false)
 }
 
 func Axis() (axis v.Vec) {

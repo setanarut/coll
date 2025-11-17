@@ -7,7 +7,7 @@ import (
 	"github.com/setanarut/v"
 )
 
-const EPSILON = 1e-8
+const Epsilon float64 = 1e-8
 
 // HitInfo holds the detailed information about a collision or contact event.
 type HitInfo struct {
@@ -61,20 +61,20 @@ func AABBPlatform(a, platform *AABB, aVel, platformVel v.Vec, h *HitInfo2) bool 
 	// Check collision direction and calculate position delta
 	if yDist < combinedHalfH {
 		if a.Pos.Y > platform.Pos.Y && oldYDist >= combinedHalfH {
-			h.Delta.Y = (platform.Pos.Y + combinedHalfH + EPSILON) - a.Pos.Y
+			h.Delta.Y = (platform.Pos.Y + combinedHalfH + Epsilon) - a.Pos.Y
 			h.Top = true
 		} else if a.Pos.Y < platform.Pos.Y && oldYDist >= combinedHalfH {
-			h.Delta.Y = (platform.Pos.Y - combinedHalfH - EPSILON) - a.Pos.Y
+			h.Delta.Y = (platform.Pos.Y - combinedHalfH - Epsilon) - a.Pos.Y
 			h.Bottom = true
 		}
 	}
 
 	if xDist < combinedHalfW {
 		if a.Pos.X > platform.Pos.X && oldXDist >= combinedHalfW {
-			h.Delta.X = (platform.Pos.X + combinedHalfW + EPSILON) - a.Pos.X
+			h.Delta.X = (platform.Pos.X + combinedHalfW + Epsilon) - a.Pos.X
 			h.Left = true
 		} else if a.Pos.X < platform.Pos.X && oldXDist >= combinedHalfW {
-			h.Delta.X = (platform.Pos.X - combinedHalfW - EPSILON) - a.Pos.X
+			h.Delta.X = (platform.Pos.X - combinedHalfW - Epsilon) - a.Pos.X
 			h.Right = true
 		}
 	}
@@ -200,8 +200,8 @@ func AABBAABBSweep1(a, b *AABB, delta v.Vec, hit *HitInfo) bool {
 	if result {
 		hit.Time = max(0, min(1, hit.Time))
 		direction := delta.Unit()
-		hit.Pos.X = max(a.Pos.X-a.Half.X, min(a.Pos.X+a.Half.X, hit.Pos.X+direction.X*b.Half.X))
-		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(a.Pos.Y-a.Half.Y, a.Pos.Y+a.Half.Y))
+		hit.Pos.X = max(a.Left(), min(a.Right(), hit.Pos.X+direction.X*b.Half.X))
+		hit.Pos.Y = max(hit.Pos.Y+direction.Y*b.Half.Y, min(a.Top(), a.Bottom()))
 	}
 	return result
 }

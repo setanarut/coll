@@ -5,11 +5,11 @@ import (
 	"log"
 
 	"github.com/setanarut/coll"
+	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/colornames"
 )
 
@@ -51,41 +51,26 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-
-	colour := colornames.Green
+	examples.StrokeAABB(s, wall, colornames.Gray)
 	if collided {
-		colour = colornames.Yellow
+		examples.StrokeAABBAt(s, cursor, box.Half, colornames.Red)
+		examples.StrokeAABB(s, box, colornames.Yellow)
+		examples.DrawHitInfo(s, hit)
+	} else {
+		examples.StrokeAABB(s, box, colornames.Gray)
 	}
+	examples.PrintHitInfoAt(s, hit, 10, 10)
 
-	vector.StrokeRect(
+	ebitenutil.DebugPrintAt(
 		s,
-		float32(wall.Pos.X-wall.Half.X),
-		float32(wall.Pos.Y-wall.Half.Y),
-		float32(wall.Half.X*2),
-		float32(wall.Half.Y*2),
-		1,
-		colornames.Gray,
-		false,
+		fmt.Sprintf(
+			"Vel: %v\nBoxPos: %v",
+			velocity,
+			box.Pos,
+		),
+		10,
+		100,
 	)
-
-	if collided {
-		// contact point
-		px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
-		nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
-
-		vector.StrokeRect(s, float32(cursor.X-box.Half.X), float32(cursor.Y-box.Half.Y), float32(box.Half.X*2), float32(box.Half.Y*2), 1, colornames.Red, false)
-		vector.FillCircle(s, px, py, 2, colornames.Yellow, true)
-		vector.StrokeLine(s, px, py, nx, ny, 1, colornames.Yellow, false)
-	}
-
-	vector.StrokeRect(s, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), 1, colour, false)
-	ebitenutil.DebugPrint(s, fmt.Sprintf(
-		"Pos: %v Delta: %v Normal: %v Time: %v ",
-		hit.Pos,
-		hit.Delta,
-		hit.Normal,
-		hit.Time,
-	))
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
