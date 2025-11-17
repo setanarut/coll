@@ -41,21 +41,18 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		slidingEnabled = !slidingEnabled
 	}
-
 	hit.Reset()
 	collided = coll.AABBAABBSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
 		if slidingEnabled {
-			boxVelocity = examples.CalculateSlideVelocity(box, boxVelocity, hit)
-			box.Pos = box.Pos.Add(boxVelocity)
-			wall.Pos = wall.Pos.Add(wallVelocity.Scale(hit.Time))
+			coll.ApplySlideVelocity(box, boxVelocity, hit)
+			box.Pos = box.Pos.Add(wallVelocity)
 		} else {
 			box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
-			wall.Pos = wall.Pos.Add(wallVelocity.Scale(hit.Time))
+			box.Pos = box.Pos.Add(wallVelocity)
 		}
 	} else {
 		box.Pos = box.Pos.Add(boxVelocity)
-		wall.Pos = wall.Pos.Add(wallVelocity)
 	}
 
 	if wall.Right() > 500 {
@@ -65,6 +62,7 @@ func (g *Game) Update() error {
 		wallVelocity = wallVelocity.NegX()
 	}
 
+	wall.Pos = wall.Pos.Add(wallVelocity)
 	return nil
 }
 

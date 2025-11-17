@@ -45,12 +45,6 @@ func CursorPos() v.Vec {
 	return v.Vec{float64(curX), float64(curY)}
 }
 
-func CalculateSlideVelocity(box *coll.AABB, vel v.Vec, hit *coll.HitInfo) (slideVel v.Vec) {
-	box.Pos = box.Pos.Add(vel.Scale(hit.Time))
-	remainingVel := vel.Scale(1.0 - hit.Time)
-	return remainingVel.Sub(hit.Normal.Scale(remainingVel.Dot(hit.Normal)))
-}
-
 func PrintHitInfoAt(dst *ebiten.Image, hit *coll.HitInfo, x, y int) {
 	ebitenutil.DebugPrintAt(
 		dst,

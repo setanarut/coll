@@ -243,3 +243,16 @@ func AABBCircleSweep(a *AABB, c *Circle, aDelta, cDelta v.Vec) bool {
 	// padding expands AABB by circle's radius to simplify collision detection
 	return AABBSegmentOverlap(a, c.Pos, relativeDelta, v.Vec{X: c.Radius, Y: c.Radius}, nil)
 }
+
+// CalculateSlideVelocity computes the total movement: movement until collision plus sliding along the surface normal.
+func CalculateSlideVelocity(vel v.Vec, hit *HitInfo) (slideVel v.Vec) {
+	remainingVel := vel.Scale(1.0 - hit.Time)
+	slideVel = remainingVel.Sub(hit.Normal.Scale(remainingVel.Dot(hit.Normal)))
+	movementToHit := vel.Scale(hit.Time)
+	return movementToHit.Add(slideVel)
+}
+
+// ApplySlideVelocity updates the AABB position by applying the calculated slide velocity.
+func ApplySlideVelocity(box *AABB, vel v.Vec, hit *HitInfo) {
+	box.Pos = box.Pos.Add(CalculateSlideVelocity(vel, hit))
+}

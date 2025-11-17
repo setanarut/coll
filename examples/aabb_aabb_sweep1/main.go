@@ -49,8 +49,8 @@ func (g *Game) Update() error {
 
 	if collided {
 		if slidingEnabled {
-			newVel := examples.CalculateSlideVelocity(box, velocity, hit) // Sliding correction
-			box.Pos = box.Pos.Add(newVel)
+			slideVel := coll.CalculateSlideVelocity(velocity, hit) // Sliding correction
+			box.Pos = box.Pos.Add(slideVel)
 		} else {
 			newVel := velocity.Scale(hit.Time) // or velocity.Add(hit.Delta)
 			box.Pos = box.Pos.Add(newVel)

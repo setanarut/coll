@@ -42,7 +42,7 @@ func (g *Game) Update() error {
 	collided = coll.AABBAABBSweep1(wall, box, velocity, hit)
 	if collided {
 		if slidingEnabled {
-			velocity = examples.CalculateSlideVelocity(box, velocity, hit)
+			velocity = coll.CalculateSlideVelocity(velocity, hit)
 		} else {
 			velocity = velocity.Add(hit.Delta)
 			box.Pos = box.Pos.Add(velocity)
