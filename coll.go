@@ -52,69 +52,6 @@ func AABBAABBContain(a, b *AABB) bool {
 	return true
 }
 
-// AABBAABBSlide performs swept AABB collision detection
-// between two moving boxes and calculates collision response information.
-//
-// The algorithm uses temporal information (previous positions) to distinguish between
-// boxes that are freshly colliding versus boxes that were already overlapping. This
-// prevents false collision responses when boxes are embedded in each other.
-//
-// The filled HitInfo2 is calculated from boxB's perspective, containing:
-//   - Delta: The displacement vector needed to move boxB to resolve penetration with boxA
-//   - Top/Bottom/Left/Right: Flags indicating which edge(s) of boxB collided with boxA
-//
-// Parameters:
-//   - boxA: The first AABB, can be static or moving
-//   - boxB: The second AABB, typically representing the moving object
-//   - boxAVel: The velocity vector of boxA
-//   - boxBVel: The velocity vector of boxB
-//   - hitInfo: Contact info for boxB
-//
-// Returns:
-//   - true if the boxes are currently colliding, false otherwise
-//
-// Note: An epsilon value is added to the delta to ensure clean separation and
-// prevent floating-point precision issues.
-func AABBAABBSlide(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo2) bool {
-
-	// Calculate old positions using velocities
-	oldPosA := boxA.Pos.Sub(boxAVel)
-	oldPosB := boxB.Pos.Sub(boxBVel)
-
-	absDist := boxB.Pos.Sub(boxA.Pos).Abs()
-	combinedHalf := boxB.Half.Add(boxA.Half)
-
-	// Early exit check
-	if absDist.X > combinedHalf.X || absDist.Y > combinedHalf.Y {
-		return false
-	}
-
-	// Calculate old absolute distances using calculated old positions
-	oldDist := oldPosB.Sub(oldPosA).Abs()
-
-	// Check collision direction and calculate position delta
-	if absDist.Y < combinedHalf.Y {
-		if boxB.Pos.Y > boxA.Pos.Y && oldDist.Y >= combinedHalf.Y {
-			hitInfo.Delta.Y = (boxA.Pos.Y + combinedHalf.Y + Epsilon) - boxB.Pos.Y
-			hitInfo.Top = true
-		} else if boxB.Pos.Y < boxA.Pos.Y && oldDist.Y >= combinedHalf.Y {
-			hitInfo.Delta.Y = (boxA.Pos.Y - combinedHalf.Y - Epsilon) - boxB.Pos.Y
-			hitInfo.Bottom = true
-		}
-	}
-
-	if absDist.X < combinedHalf.X {
-		if boxB.Pos.X > boxA.Pos.X && oldDist.X >= combinedHalf.X {
-			hitInfo.Delta.X = (boxA.Pos.X + combinedHalf.X + Epsilon) - boxB.Pos.X
-			hitInfo.Left = true
-		} else if boxB.Pos.X < boxA.Pos.X && oldDist.X >= combinedHalf.X {
-			hitInfo.Delta.X = (boxA.Pos.X - combinedHalf.X - Epsilon) - boxB.Pos.X
-			hitInfo.Right = true
-		}
-	}
-	return true
-}
-
 // AABBSegmentOverlap returns true if they intersect, false otherwise
 //
 // Params:

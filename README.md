@@ -6,6 +6,5 @@
 - AABB-Circle (Sweep)
 - AABB-Tilemap
 - Segment-Tilemap (DDA)
-- AABB-Platform
 
 See examples folder

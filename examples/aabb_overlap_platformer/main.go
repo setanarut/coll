@@ -18,18 +18,19 @@ import (
 const (
 	ScreenWidth          = 854
 	ScreenHeight         = 480
-	Gravity      float64 = 1.0
-	Damping      float64 = 0.9
+	Gravity      float64 = 0.2
+	JumpForce    float64 = -10
+	PlayerSpeed  float64 = 4
 )
 
 var (
 	box         = coll.NewAABB(100, 100, 16, 35)
 	boxVelocity = v.Vec{0, 0}
-	hitInfoBoxB = &coll.HitInfo2{}
+	hitInfoBoxB = &coll.HitInfo{}
 )
 
 var (
-	platform         = coll.NewAABB(400, 250, 100, 10)
+	platform         = coll.NewAABB(400, 300, 100, 10)
 	platformVelocity = v.Vec{3, 0}
 )
 
@@ -40,26 +41,21 @@ func (g *Game) Update() error {
 
 	// Jump control
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		boxVelocity.Y = -60 // Fixed jump velocity
+		boxVelocity.Y = JumpForce
 	}
 
-	// WASDMovement
-	boxVelocity.X = axis.X * 10
-
-	// Apply gravity and friction
+	boxVelocity.X = axis.X * PlayerSpeed // WASD Movement
 	boxVelocity.Y += Gravity
-	boxVelocity.X *= Damping
-	boxVelocity.Y *= Damping
 
 	platform.Pos = platform.Pos.Add(platformVelocity)
 	box.Pos = box.Pos.Add(boxVelocity)
 
 	// Collision check
 	hitInfoBoxB.Reset()
-	if coll.AABBAABBSlide(platform, box, platformVelocity, boxVelocity, hitInfoBoxB) {
+	if coll.AABBOverlap(platform, box, hitInfoBoxB) {
 		box.Pos = box.Pos.Add(hitInfoBoxB.Delta)
 		box.Pos = box.Pos.Add(platformVelocity)
-		if hitInfoBoxB.Top {
+		if hitInfoBoxB.Normal.Y != 0 {
 			boxVelocity.Y = 0 // Reset vertical velocity
 		}
 	}
@@ -80,10 +76,10 @@ func (g *Game) Update() error {
 
 // Draw renders the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
-	examples.StrokeAABB(screen, box, colornames.Gray)      // player
+	examples.StrokeAABB(screen, box, colornames.Green)     // player
 	examples.StrokeAABB(screen, platform, colornames.Gray) // platform
-	examples.PrintHitInfoAt2(screen, hitInfoBoxB, 10, 10)
-	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space)", 10, 30)
+	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space)", 10, 10)
+	examples.PrintHitInfoAt(screen, hitInfoBoxB, 10, 100)
 
 }
 
