@@ -55,13 +55,13 @@ func AABBAABBContain(a, b *AABB) bool {
 // AABBAABBSlide performs swept AABB collision detection
 // between two moving boxes and calculates collision response information.
 //
-// The filled HitInfo2 is calculated from boxB's perspective, containing:
-//   - Delta: The displacement vector needed to move boxB to resolve penetration with boxA
-//   - Top/Bottom/Left/Right: Flags indicating which edge(s) of boxB collided with boxA
-//
 // The algorithm uses temporal information (previous positions) to distinguish between
 // boxes that are freshly colliding versus boxes that were already overlapping. This
 // prevents false collision responses when boxes are embedded in each other.
+//
+// The filled HitInfo2 is calculated from boxB's perspective, containing:
+//   - Delta: The displacement vector needed to move boxB to resolve penetration with boxA
+//   - Top/Bottom/Left/Right: Flags indicating which edge(s) of boxB collided with boxA
 //
 // Parameters:
 //   - boxA: The first AABB, can be static or moving
@@ -76,48 +76,42 @@ func AABBAABBContain(a, b *AABB) bool {
 // Note: An epsilon value is added to the delta to ensure clean separation and
 // prevent floating-point precision issues.
 func AABBAABBSlide(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo2) bool {
+
 	// Calculate old positions using velocities
-	aOldPos := v.Vec{boxB.Pos.X - boxBVel.X, boxB.Pos.Y - boxBVel.Y}
-	bOldPos := v.Vec{boxA.Pos.X - boxAVel.X, boxA.Pos.Y - boxAVel.Y}
+	oldPosA := boxA.Pos.Sub(boxAVel)
+	oldPosB := boxB.Pos.Sub(boxBVel)
 
-	// Check collision at current positions using half dimensions
-	xDist := math.Abs(boxB.Pos.X - boxA.Pos.X)
-	yDist := math.Abs(boxB.Pos.Y - boxA.Pos.Y)
-
-	// Combined half widths and heights
-	combinedHalfW := boxB.Half.X + boxA.Half.X
-	combinedHalfH := boxB.Half.Y + boxA.Half.Y
+	absDist := boxB.Pos.Sub(boxA.Pos).Abs()
+	combinedHalf := boxB.Half.Add(boxA.Half)
 
 	// Early exit check
-	if xDist > combinedHalfW || yDist > combinedHalfH {
+	if absDist.X > combinedHalf.X || absDist.Y > combinedHalf.Y {
 		return false
 	}
 
-	// Calculate old distances using calculated old positions
-	oldXDist := math.Abs(aOldPos.X - bOldPos.X)
-	oldYDist := math.Abs(aOldPos.Y - bOldPos.Y)
+	// Calculate old absolute distances using calculated old positions
+	oldDist := oldPosB.Sub(oldPosA).Abs()
 
 	// Check collision direction and calculate position delta
-	if yDist < combinedHalfH {
-		if boxB.Pos.Y > boxA.Pos.Y && oldYDist >= combinedHalfH {
-			hitInfo.Delta.Y = (boxA.Pos.Y + combinedHalfH + Epsilon) - boxB.Pos.Y
+	if absDist.Y < combinedHalf.Y {
+		if boxB.Pos.Y > boxA.Pos.Y && oldDist.Y >= combinedHalf.Y {
+			hitInfo.Delta.Y = (boxA.Pos.Y + combinedHalf.Y + Epsilon) - boxB.Pos.Y
 			hitInfo.Top = true
-		} else if boxB.Pos.Y < boxA.Pos.Y && oldYDist >= combinedHalfH {
-			hitInfo.Delta.Y = (boxA.Pos.Y - combinedHalfH - Epsilon) - boxB.Pos.Y
+		} else if boxB.Pos.Y < boxA.Pos.Y && oldDist.Y >= combinedHalf.Y {
+			hitInfo.Delta.Y = (boxA.Pos.Y - combinedHalf.Y - Epsilon) - boxB.Pos.Y
 			hitInfo.Bottom = true
 		}
 	}
 
-	if xDist < combinedHalfW {
-		if boxB.Pos.X > boxA.Pos.X && oldXDist >= combinedHalfW {
-			hitInfo.Delta.X = (boxA.Pos.X + combinedHalfW + Epsilon) - boxB.Pos.X
+	if absDist.X < combinedHalf.X {
+		if boxB.Pos.X > boxA.Pos.X && oldDist.X >= combinedHalf.X {
+			hitInfo.Delta.X = (boxA.Pos.X + combinedHalf.X + Epsilon) - boxB.Pos.X
 			hitInfo.Left = true
-		} else if boxB.Pos.X < boxA.Pos.X && oldXDist >= combinedHalfW {
-			hitInfo.Delta.X = (boxA.Pos.X - combinedHalfW - Epsilon) - boxB.Pos.X
+		} else if boxB.Pos.X < boxA.Pos.X && oldDist.X >= combinedHalf.X {
+			hitInfo.Delta.X = (boxA.Pos.X - combinedHalf.X - Epsilon) - boxB.Pos.X
 			hitInfo.Right = true
 		}
 	}
-
 	return true
 }
 
@@ -164,6 +158,7 @@ func AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo
 		hitInfo.Normal.X = 0
 		hitInfo.Normal.Y = -signY
 	}
+
 	hitInfo.Delta.X = (1.0 - hitInfo.Time) * -delta.X
 	hitInfo.Delta.Y = (1.0 - hitInfo.Time) * -delta.Y
 
@@ -188,14 +183,17 @@ func AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo
 // If you only need to know whether a collision occurred, pass nil for hitInfo
 // to skip generating collision details.
 func AABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
+
 	dx := boxB.Pos.X - boxA.Pos.X
 	px := boxB.Half.X + boxA.Half.X - math.Abs(dx)
+
 	if px <= 0 {
 		return false
 	}
 
 	dy := boxB.Pos.Y - boxA.Pos.Y
 	py := boxB.Half.Y + boxA.Half.Y - math.Abs(dy)
+
 	if py <= 0 {
 		return false
 	}
@@ -204,7 +202,7 @@ func AABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
 		return true
 	}
 
-	// hit reset here
+	// if if hitInfo is not nil, fill
 	if px < py {
 		sx := math.Copysign(1, dx)
 		hitInfo.Delta.X = px * sx

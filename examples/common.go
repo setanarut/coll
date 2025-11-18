@@ -3,13 +3,13 @@ package examples
 import (
 	"fmt"
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
 	"github.com/setanarut/v"
-	"golang.org/x/image/colornames"
 )
 
 const WindowWidth, WindowHeight int = 500, 500
@@ -17,6 +17,7 @@ const WindowWidth, WindowHeight int = 500, 500
 func StrokeCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
 	vector.StrokeCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), 2, clr, true)
 }
+
 func FillCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
 	vector.FillCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), clr, true)
 }
@@ -41,11 +42,8 @@ func FillAABB(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.FillRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), clr, false)
 }
 
-func DrawHitInfo(dst *ebiten.Image, hit *coll.HitInfo) {
-	px, py := float32(hit.Pos.X), float32(hit.Pos.Y)
-	nx, ny := px+(float32(hit.Normal.X)*8), py+(float32(hit.Normal.Y)*8)
-	vector.FillCircle(dst, px, py, 2, colornames.Yellow, true)
-	vector.StrokeLine(dst, px, py, nx, ny, 1, colornames.Yellow, false)
+func DrawHitNormal(dst *ebiten.Image, hit *coll.HitInfo, clr color.Color, arrow bool) {
+	DrawRay(dst, hit.Pos, hit.Normal, 6, clr, arrow)
 }
 
 func CursorPos() v.Vec {
@@ -84,4 +82,26 @@ func Axis() (axis v.Vec) {
 		axis.X += 1
 	}
 	return
+}
+
+func DrawRay(s *ebiten.Image, pos, dir v.Vec, length float64, clr color.Color, arrow bool) {
+	end := pos.Add(dir.Unit().Scale(length))
+	DrawSegment(s, pos, end, clr)
+
+	if arrow {
+		arrowLen := 6.0
+		arrowAngle := math.Pi / 6 // 30 degree
+
+		unitDir := dir.Unit()
+
+		left := unitDir.Rotate(math.Pi - arrowAngle).Scale(arrowLen)
+		right := unitDir.Rotate(-(math.Pi - arrowAngle)).Scale(arrowLen)
+
+		DrawSegment(s, end, end.Add(left), clr)
+		DrawSegment(s, end, end.Add(right), clr)
+	}
+}
+
+func DrawSegment(s *ebiten.Image, start, end v.Vec, clr color.Color) {
+	vector.StrokeLine(s, float32(start.X), float32(start.Y), float32(end.X), float32(end.Y), 1.5, clr, true)
 }

@@ -65,7 +65,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	examples.StrokeAABB(s, wall, colornames.Gray)
 	if collided {
 		examples.StrokeAABB(s, box, colornames.Yellow)
-		examples.DrawHitInfo(s, hit)
+		examples.DrawHitNormal(s, hit)
 	} else {
 		examples.StrokeAABB(s, box, colornames.Green)
 	}
