@@ -21,6 +21,8 @@ type HitRayInfo struct {
 
 // RaycastDDA performs the DDA (Digital Differential Analysis) algorithm to find intersections with a tile map
 //
+// youtube.com/watch?v=NbSee-XM7WA
+//
 // Parameters:
 //   - start: Starting position of the ray
 //   - dir: Direction unit vector of the ray (should be normalized)
