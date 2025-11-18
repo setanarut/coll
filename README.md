@@ -1,4 +1,5 @@
-# coll
+[![GoDoc](https://godoc.org/github.com/setanarut/coll?status.svg)](https://pkg.go.dev/github.com/setanarut/coll)
+# coll - 2d collision library for Go
 
 There are many Go collision libraries for 2d. None satisifed all of these criteria:
 
@@ -51,8 +52,8 @@ plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line
 
 ## Credits
 
-Most of these collision checks were adapted from existing open source repo:
+Most of these collision checks were adapted from existing open source repos:
 
 * [github.com/mreinstein/collision-2d](https://github.com/mreinstein/collision-2d)
 * [youtube.com/watch?v=NbSee-XM7WA](https://youtube.com/watch?v=NbSee-XM7WA) - ray-tilemap (RaycastDDA)
-* https://jonathanwhiting.com/tutorial/collision - aabb-tilemap (TileCollider)
+* [jonathanwhiting.com/tutorial/collision](https://jonathanwhiting.com/tutorial/collision) - aabb-tilemap (TileCollider)
