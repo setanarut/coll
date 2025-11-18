@@ -17,22 +17,9 @@ type HitInfo struct {
 	Time   float64 // The time (0.0 to 1.0) along the movement path when the collision happened.
 }
 
-// HitInfo2 tracks which sides of an AABB (Box) were contacted.
-type HitInfo2 struct {
-	// Flags indicating which side of the bounding box was hit.
-	Right, Bottom, Left, Top bool
-	// The remaining movement vector after the collision.
-	Delta v.Vec
-}
-
 // Resets the HitInfo struct to its zero values.
 func (h *HitInfo) Reset() {
 	*h = HitInfo{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
-}
-
-// Resets the HitInfo struct to its zero values.
-func (h *HitInfo2) Reset() {
-	*h = HitInfo2{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
 }
 
 // AABBAABBContain returns true if a fully contains b (b is fully inside of the bounds of a).
