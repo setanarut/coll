@@ -52,7 +52,7 @@ func (g *Game) Update() error {
 
 	// Collision check
 	hitInfoBoxB.Reset()
-	if coll.AABBOverlap(platform, box, hitInfoBoxB) {
+	if coll.AABBAABBOverlap(platform, box, hitInfoBoxB) {
 		box.Pos = box.Pos.Add(hitInfoBoxB.Delta)
 		box.Pos = box.Pos.Add(platformVelocity)
 		if hitInfoBoxB.Normal.Y != 0 {

@@ -90,7 +90,7 @@ func AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo
 	return true
 }
 
-// AABBOverlap checks whether boxA and boxB overlap.
+// AABBAABBOverlap checks whether boxA and boxB overlap.
 // Any collision information written to hitInfo always describes how to move boxA out of boxB.
 //
 // It uses a separating-axis test: if the boxes do not overlap on either X or Y,
@@ -106,7 +106,7 @@ func AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo
 //
 // If you only need to know whether a collision occurred, pass nil for hitInfo
 // to skip generating collision details.
-func AABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
+func AABBAABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
 
 	dx := boxB.Pos.X - boxA.Pos.X
 	px := boxB.Half.X + boxA.Half.X - math.Abs(dx)
@@ -156,7 +156,7 @@ func AABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
 //   - hitInfo - The contact object. Filled if collision occurs
 func AABBAABBSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool {
 	if boxBVel.IsZero() {
-		return AABBOverlap(staticBoxA, boxB, hitInfo)
+		return AABBAABBOverlap(staticBoxA, boxB, hitInfo)
 	}
 	result := AABBSegmentOverlap(staticBoxA, boxB.Pos, boxBVel, boxB.Half, hitInfo)
 	if result {
