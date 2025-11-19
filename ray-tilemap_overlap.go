@@ -7,8 +7,6 @@ import (
 	"github.com/setanarut/v"
 )
 
-// Removed local HitInfo struct to use the shared one from coll.go
-
 // RaycastDDA performs the DDA (Digital Differential Analysis) algorithm to find intersections with a tile map
 //
 // youtube.com/watch?v=NbSee-XM7WA
