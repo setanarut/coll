@@ -14,7 +14,7 @@ type TileHitInfo struct {
 	Normal     v.Vec       // Normal vector of the collision (-1/0/1)
 }
 
-// TileCollider handles collision detection between rectangles and a 2D tilemap
+// TileCollider handles collision detection between AABB and [][]uint8 2D tilemap
 type TileCollider struct {
 	Collisions     []TileHitInfo // List of collisions from last check
 	CellSize       image.Point   // Width and height of tiles
@@ -33,8 +33,8 @@ func NewTileCollider(tileMap [][]uint8, tileWidth, tileHeight int) *TileCollider
 // TileCollisionCallback is called when collisions occur, receiving collision info and final movement
 type TileCollisionCallback func([]TileHitInfo, float64, float64)
 
-// Collide checks for collisions when moving a rectangle and returns the allowed movement
-func (c *TileCollider) Collide(rect AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec {
+// Collide checks for collisions when a moving aabb and returns the allowed movement
+func (c *TileCollider) Collide(aabb AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec {
 	c.Collisions = c.Collisions[:0]
 
 	if delta.X == 0 && delta.Y == 0 {
@@ -43,20 +43,20 @@ func (c *TileCollider) Collide(rect AABB, delta v.Vec, onCollide TileCollisionCa
 
 	if math.Abs(delta.X) > math.Abs(delta.Y) {
 		if delta.X != 0 {
-			delta.X = c.CollideX(&rect, delta.X)
+			delta.X = c.CollideX(&aabb, delta.X)
 		}
 		if delta.Y != 0 {
-			rect.Pos.X += delta.X
-			delta.Y = c.CollideY(&rect, delta.Y)
+			aabb.Pos.X += delta.X
+			delta.Y = c.CollideY(&aabb, delta.Y)
 		}
 	} else {
 		if delta.Y != 0 {
-			delta.Y = c.CollideY(&rect, delta.Y)
+			delta.Y = c.CollideY(&aabb, delta.Y)
 		}
 		if delta.X != 0 {
 
-			rect.Pos.Y += delta.Y
-			delta.X = c.CollideX(&rect, delta.X)
+			aabb.Pos.Y += delta.Y
+			delta.X = c.CollideX(&aabb, delta.X)
 		}
 	}
 
@@ -68,17 +68,17 @@ func (c *TileCollider) Collide(rect AABB, delta v.Vec, onCollide TileCollisionCa
 }
 
 // CollideX checks for collisions along the X axis and returns the allowed X movement
-func (c *TileCollider) CollideX(rect *AABB, deltaX float64) float64 {
+func (c *TileCollider) CollideX(aabb *AABB, deltaX float64) float64 {
 	checkLimit := max(1, int(math.Ceil(math.Abs(deltaX)/float64(c.CellSize.Y)))+1)
 
-	rectTop := rect.Pos.Y - rect.Half.Y
-	rectBottom := rect.Pos.Y + rect.Half.Y
+	rectTop := aabb.Top()
+	rectBottom := aabb.Bottom()
 
 	rectTileTopCoord := int(math.Floor(rectTop / float64(c.CellSize.Y)))
 	rectTileBottomCoord := int(math.Ceil((rectBottom)/float64(c.CellSize.Y))) - 1
 
 	if deltaX > 0 {
-		startRightX := int(math.Floor((rect.Pos.X + rect.Half.X) / float64(c.CellSize.X)))
+		startRightX := int(math.Floor((aabb.Pos.X + aabb.Half.X) / float64(c.CellSize.X)))
 		endX := startRightX + checkLimit
 		endX = min(endX, len(c.TileMap[0]))
 
@@ -92,7 +92,7 @@ func (c *TileCollider) CollideX(rect *AABB, deltaX float64) float64 {
 				}
 				if c.TileMap[y][x] != c.NonSolidTileID {
 					tileLeft := float64(x * c.CellSize.X)
-					collision := tileLeft - (rect.Pos.X + rect.Half.X)
+					collision := tileLeft - (aabb.Pos.X + aabb.Half.X)
 					if collision <= deltaX {
 						deltaX = collision
 						c.Collisions = append(c.Collisions, TileHitInfo{
@@ -107,7 +107,7 @@ func (c *TileCollider) CollideX(rect *AABB, deltaX float64) float64 {
 	}
 
 	if deltaX < 0 {
-		rectLeft := rect.Pos.X - rect.Half.X
+		rectLeft := aabb.Left()
 
 		endX := int(math.Floor(rectLeft / float64(c.CellSize.X)))
 		startX := endX - checkLimit
@@ -145,8 +145,8 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 
 	checkLimit := max(1, int(math.Ceil(math.Abs(deltaY)/float64(c.CellSize.Y)))+1)
 
-	rectLeft := rect.Pos.X - rect.Half.X
-	rectRight := rect.Pos.X + rect.Half.X
+	rectLeft := rect.Left()
+	rectRight := rect.Right()
 
 	rectTileLeftCoord := int(math.Floor(rectLeft / float64(c.CellSize.X)))
 	rectTileRightCoord := int(math.Ceil(rectRight/float64(c.CellSize.X))) - 1
@@ -182,7 +182,7 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 	}
 
 	if deltaY < 0 {
-		rectTop := rect.Pos.Y - rect.Half.Y
+		rectTop := rect.Top()
 		endY := int(math.Floor(rectTop / float64(c.CellSize.Y)))
 		startY := endY - checkLimit
 		startY = max(startY, 0)
