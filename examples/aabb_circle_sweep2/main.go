@@ -13,14 +13,16 @@ import (
 
 var (
 	box         = coll.NewAABB(100, 250, 10, 100)
-	boxVelocity = v.Vec{5, 0}
+	boxVelocity = v.Vec{3, 0}
 )
 var (
 	circle         = coll.NewCircle(100, 100, 20)
 	circleVelocity = v.Vec{0, 0}
 )
 
-var overlap bool
+var hitInfo = &coll.HitInfo{}
+
+var sweep bool
 
 func main() {
 	g := &Game{ScreenWidth: 800, H: 500}
@@ -38,7 +40,7 @@ func (g *Game) Update() error {
 
 	circleVelocity = examples.CursorPos().Sub(circle.Pos)
 
-	overlap = coll.AABBCircleSweep2(
+	sweep = coll.AABBCircleSweep2(
 		box,
 		circle,
 		boxVelocity,
@@ -55,8 +57,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-	if overlap {
-		examples.FillCircle(s, circle, colornames.Yellow)
+	if sweep {
+		examples.StrokeCircle(s, circle, colornames.Yellow)
+		examples.DrawHitNormal(s, hitInfo, colornames.Yellow, true)
 	} else {
 		examples.StrokeCircle(s, circle, colornames.Gray)
 	}

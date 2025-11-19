@@ -22,35 +22,84 @@ plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line
 
 "indexed" tests are the same as their non-indexed forms, except they take in an array of segment indices to use. These are nice in that you can avoid having to build large arrays of line segments every frame, if you have things like dynamic line segments (platforms) or have a spatial culling algorithm that selects line segments to include.
 
-## Available collision checks (work in progress)
 
-- [x] aabb-aabb overlap
-- [x] aabb-aabb contain
-- [x] aabb-aabb sweep 1
-- [x] aabb-aabb sweep 2
-- [x] aabb-segment sweep1
-- [ ] aabb-segments sweep-indexed
-- [x] aabb-point overlap
-- [x] aabb-segment overlap
-- [ ] ray-plane-distance
-- [ ] ray-circle overlap
-- [ ] segment-circle overlap
-- [ ] segment-normal
-- [ ] segment-point-overlap
-- [ ] segment-segment-overlap
-- [ ] segments-segment-overlap
-- [ ] segments-segment-overlap-indexed
-- [x] aabb-circle sweep
-- [ ] segments-circle-sweep 1
-- [ ] segments-circle-sweep-1-indexed
-- [ ] circle-circle-overlap
-- [ ] circle-circle-sweep2
-- [ ] cone-point-overlap
-- [ ] triangle-point-overlap
-- [x] ray-tilemap
-- [x] aabb-tilemap
+## Available collision checks
 
-## Examples 
+### AABB-AABB-overlap
+
+![AABB-AABB-overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-overlap.png)
+
+```go
+AABBAABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool
+```
+
+### AABB-AABB-contain
+
+```go
+// AABBAABBContain returns true if a fully contains b.
+AABBAABBContain(a, b *AABB) bool
+```
+
+### AABB-AABB sweep 1
+
+![AABB-AABB sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep1.png)
+
+```go
+AABBAABBSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool 
+```
+
+### AABB-AABB sweep 2
+
+![AABB-AABB sweep 2](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep2.png)
+
+```go
+AABBAABBSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
+```
+
+## AABB-Segment sweep 1
+
+```go
+AABBSegmentSweep1(line *Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) bool
+```
+
+![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
+
+## AABB-Point overlap
+
+```go
+AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
+```
+
+![AABB-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
+
+## AABB-Segment overlap
+
+```go
+AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool
+```
+
+![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
+
+## AABB-Circle sweep 2
+
+```go
+AABBCircleSweep2(aabb *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
+```
+
+## AABB-Tilemap sweep
+
+```go
+(c *TileCollider) Collide(aabb AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec
+```
+
+## Ray-Tilemap overlap (DDA)
+
+```go
+RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool
+```
+
+
+## Examples (Ebitengine)
 
 1. Clone this repository
 2. In the terminal, change to the examples directory `cd examples`
