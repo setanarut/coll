@@ -8,22 +8,6 @@ There are many Go collision libraries for 2d. None satisifed all of these criter
 * Is data-oriented and functional
 * Consistent API interface
 
-## Conventions
-
-All collision checking functions return a bool indicating if there was a collision.
-They also accept an optional `hitInfo` argument, which gets filled in if there is an actual collision.  
-
-"Sweep" tests indicate at least 1 of the objects is moving.
-
-The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
-
-"Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
-
-plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments. If there is more than one collision, the closest collision is set in the `hitInfo` argument.
-
-"indexed" tests are the same as their non-indexed forms, except they take in an array of segment indices to use. These are nice in that you can avoid having to build large arrays of line segments every frame, if you have things like dynamic line segments (platforms) or have a spatial culling algorithm that selects line segments to include.
-
-
 ## Available collision checks
 
 ### AABB-AABB-overlap
@@ -59,11 +43,19 @@ AABBAABBSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 
 ### AABB-Segment sweep 1
 
+![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
+
 ```go
 AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 ```
 
-![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
+### AABB-Segment sweep 1 indexed
+
+![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
+
+```go
+AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (bool, int)
+```
 
 ### AABB-Point overlap
 
@@ -98,6 +90,19 @@ AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ```go
 RaycastDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h *HitInfo) (bool, image.Point) 
 ```
+
+## Conventions
+
+All collision checking functions return a bool indicating if there was a collision.
+They also accept an optional `hitInfo` argument, which gets filled in if there is an actual collision.  
+
+"Sweep" tests indicate at least 1 of the objects is moving.
+
+The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
+
+"Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
+
+plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments. If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Examples (Ebitengine)
 
