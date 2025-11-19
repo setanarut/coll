@@ -2,11 +2,22 @@
 
 # coll - 2d collision library for Go
 
-There are many Go collision libraries for 2d. None satisifed all of these criteria:
+Features
 
 * Collisions only - no gravity, rigid body handling, or complex solvers
 * Is data-oriented and functional
 * Consistent API interface
+
+## Conventions
+
+All collision checking functions return a bool indicating if there was a collision.
+They also accept an optional `hitInfo` argument (nil), which gets filled in if there is an actual collision.  
+
+"Sweep" tests indicate at least 1 of the objects is moving. 
+The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
+"Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
+plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments.
+If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Available collision checks
 
@@ -90,19 +101,6 @@ AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ```go
 RaycastDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h *HitInfo) (bool, image.Point) 
 ```
-
-## Conventions
-
-All collision checking functions return a bool indicating if there was a collision.
-They also accept an optional `hitInfo` argument, which gets filled in if there is an actual collision.  
-
-"Sweep" tests indicate at least 1 of the objects is moving.
-
-The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
-
-"Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
-
-plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments. If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Examples (Ebitengine)
 
