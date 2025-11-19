@@ -30,11 +30,11 @@ plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line
 - [x] aabb-aabb sweep 2
 - [x] aabb-segment sweep
 - [ ] aabb-segments sweep-indexed
-- [ ] aabb-point overlap
+- [x] aabb-point overlap
 - [x] aabb-segment overlap
 - [ ] ray-plane-distance
-- [ ] ray-sphere overlap
-- [ ] segment-sphere overlap
+- [ ] ray-circle overlap
+- [ ] segment-circle overlap
 - [ ] segment-normal
 - [ ] segment-point-overlap
 - [ ] segment-segment-overlap
