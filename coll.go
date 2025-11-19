@@ -23,6 +23,15 @@ func (h *HitInfo) Reset() {
 	*h = HitInfo{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
 }
 
+func SegmentNormal(pos1, pos2 v.Vec) (normal v.Vec) {
+	d := pos2.Sub(pos1)
+	if d.IsZero() {
+		return v.Vec{}
+	}
+	normal = v.Vec{X: d.Y, Y: -d.X}
+	return normal.Unit()
+}
+
 // CalculateSlideVelocity computes the total movement: movement until collision plus sliding along the surface normal.
 func CalculateSlideVelocity(vel v.Vec, hitInfo *HitInfo) (slideVel v.Vec) {
 	remainingVel := vel.Scale(1.0 - hitInfo.Time)
@@ -32,6 +41,6 @@ func CalculateSlideVelocity(vel v.Vec, hitInfo *HitInfo) (slideVel v.Vec) {
 }
 
 // ApplySlideVelocity updates the AABB position by applying the calculated slide velocity.
-func ApplySlideVelocity(aabb *AABB, vel v.Vec, hitInfo *HitInfo) {
-	aabb.Pos = aabb.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
+func ApplySlideVelocity(box *AABB, vel v.Vec, hitInfo *HitInfo) {
+	box.Pos = box.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
 }

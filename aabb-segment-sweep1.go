@@ -6,23 +6,23 @@ import (
 	"github.com/setanarut/v"
 )
 
-// AABBSegmentSweep1 sweep a moving aabb against a line segment.
+// AABBSegmentSweep1 sweep a moving AABB against a line segment.
 //
 // Return true when the box hits the segment.
 //
 // Params:
 //
-//   - line - non-moving line segment
-//   - aabb - moving box
+//   - line - static line segment
+//   - box - moving box
 //   - delta - delta movement vector of the aabb
 //   - hitInfo - optional contact data structure filled on hit, can be nil
-func AABBSegmentSweep1(line *Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) bool {
+func AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool {
 
 	var lineMin, lineMax v.Vec
 
-	aabbCenter := aabb.Pos
-	aabbMin := aabb.Min()
-	aabbMax := aabb.Max()
+	aabbCenter := box.Pos
+	aabbMin := box.Min()
+	aabbMax := box.Max()
 
 	normalizedDelta := delta.Unit()
 
@@ -49,14 +49,14 @@ func AABBSegmentSweep1(line *Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)
 	// get the line's normal
 	// if the dot product of it and the delta is larger than 0,
 	// it means the line's normal is facing away from the sweep
-	lineNormal := segmentNormal(line.A, line.B)
+	lineNormal := SegmentNormal(line.A, line.B)
 	hitNormal := lineNormal
 
 	hitTime := 0.0
 	outTime := 1.0
 
 	// calculate the radius of the box in respect to the line normal
-	r := aabb.Half.X*math.Abs(lineNormal.X) + aabb.Half.Y*math.Abs(lineNormal.Y)
+	r := box.Half.X*math.Abs(lineNormal.X) + box.Half.Y*math.Abs(lineNormal.Y)
 
 	// distance from box to line in respect to the line normal
 	boxProj := lineAabbDist.Dot(lineNormal)
@@ -167,20 +167,10 @@ func AABBSegmentSweep1(line *Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)
 	if hitInfo != nil {
 		hitInfo.Delta.X = delta.X*hitTime + (Padding * hitNormal.X)
 		hitInfo.Delta.Y = delta.Y*hitTime + (Padding * hitNormal.Y)
-		hitInfo.Pos = aabb.Pos.Add(hitInfo.Delta)
+		hitInfo.Pos = box.Pos.Add(hitInfo.Delta)
 		hitInfo.Normal = hitNormal
 		hitInfo.Time = hitTime
 		// hitInfo.collider = line
 	}
 	return true
-}
-
-func segmentNormal(pos1, pos2 v.Vec) (out v.Vec) {
-	d := pos2.Sub(pos1)
-	if d.IsZero() {
-		return v.Vec{}
-	}
-	// match JS: perpendicular = [dy, -dx]
-	out = v.Vec{X: d.Y, Y: -d.X}
-	return out.Unit()
 }

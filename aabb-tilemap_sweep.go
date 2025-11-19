@@ -34,7 +34,7 @@ func NewTileCollider(tileMap [][]uint8, tileWidth, tileHeight int) *TileCollider
 type TileCollisionCallback func([]TileHitInfo, float64, float64)
 
 // Collide checks for collisions when a moving aabb and returns the allowed movement
-func (c *TileCollider) Collide(aabb AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec {
+func (c *TileCollider) Collide(box AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec {
 	c.Collisions = c.Collisions[:0]
 
 	if delta.X == 0 && delta.Y == 0 {
@@ -43,20 +43,20 @@ func (c *TileCollider) Collide(aabb AABB, delta v.Vec, onCollide TileCollisionCa
 
 	if math.Abs(delta.X) > math.Abs(delta.Y) {
 		if delta.X != 0 {
-			delta.X = c.CollideX(&aabb, delta.X)
+			delta.X = c.CollideX(&box, delta.X)
 		}
 		if delta.Y != 0 {
-			aabb.Pos.X += delta.X
-			delta.Y = c.CollideY(&aabb, delta.Y)
+			box.Pos.X += delta.X
+			delta.Y = c.CollideY(&box, delta.Y)
 		}
 	} else {
 		if delta.Y != 0 {
-			delta.Y = c.CollideY(&aabb, delta.Y)
+			delta.Y = c.CollideY(&box, delta.Y)
 		}
 		if delta.X != 0 {
 
-			aabb.Pos.Y += delta.Y
-			delta.X = c.CollideX(&aabb, delta.X)
+			box.Pos.Y += delta.Y
+			delta.X = c.CollideX(&box, delta.X)
 		}
 	}
 

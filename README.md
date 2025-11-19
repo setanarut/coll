@@ -59,7 +59,7 @@ AABBAABBSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 ## AABB-Segment sweep 1
 
 ```go
-AABBSegmentSweep1(line *Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) bool
+AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 ```
 
 ![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
@@ -83,13 +83,13 @@ AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) boo
 ## AABB-Circle sweep 2
 
 ```go
-AABBCircleSweep2(aabb *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
+AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ```
 
 ## AABB-Tilemap sweep
 
 ```go
-(c *TileCollider) Collide(aabb AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec
+(c *TileCollider) Collide(box AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec
 ```
 
 ## Ray-Tilemap overlap (DDA)
