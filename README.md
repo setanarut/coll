@@ -96,7 +96,7 @@ AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ### Ray-Tilemap overlap (DDA)
 
 ```go
-RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool
+RaycastDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h *HitInfo) (bool, image.Point) 
 ```
 
 ## Examples (Ebitengine)

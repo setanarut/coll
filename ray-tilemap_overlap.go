@@ -12,7 +12,7 @@ import (
 // youtube.com/watch?v=NbSee-XM7WA
 //
 // Parameters:
-//   - start: Starting position of the ray
+//   - pos: Starting position of the ray
 //   - dir: Direction unit vector of the ray (should be normalized)
 //   - length: Maximum distance the ray can travel
 //   - tileMap: 2D grid of cells where any non-zero value represents a wall/obstacle
@@ -20,12 +20,12 @@ import (
 // Returns:
 //   - bool: True if a collision occurred
 //   - image.Point: The grid coordinates of the wall that was hit (0,0 if no hit)
-func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitInfo) (bool, image.Point) {
+func RaycastDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitInfo) (bool, image.Point) {
 	// Bitiş noktasını hesapla
-	end := start.Add(dir.Scale(length))
+	end := pos.Add(dir.Scale(length))
 
 	// DDA için delta değerlerini hesapla
-	delta := end.Sub(start)
+	delta := end.Sub(pos)
 	steps := int(max(math.Abs(delta.X), math.Abs(delta.Y)))
 
 	// Her adımdaki artış miktarı
@@ -35,7 +35,7 @@ func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize fl
 	}
 
 	// Başlangıç noktası
-	current := start
+	current := pos
 
 	// Her piksel için kontrol et
 	for i := 0; i <= steps; i++ {
@@ -55,7 +55,7 @@ func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize fl
 				hit.Time = 0
 
 				// Mesafe ve zaman (0..1) hesapla
-				distance := current.Sub(start).Mag()
+				distance := current.Sub(pos).Mag()
 				if length > 0 {
 					hit.Time = distance / length
 				}
