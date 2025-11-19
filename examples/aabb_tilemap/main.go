@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -25,11 +26,11 @@ var rect = coll.AABB{
 
 var (
 	TileMap = [][]uint8{
-		{0, 0, 0, 0, 0, 0, 9, 1},
+		{0, 0, 0, 1, 1, 0, 9, 1},
 		{0, 0, 0, 0, 0, 6, 0, 1},
 		{4, 0, 0, 0, 0, 0, 0, 0},
 		{0, 0, 0, 8, 0, 8, 3, 1},
-		{2, 0, 0, 0, 0, 0, 0, 0},
+		{2, 0, 0, 33, 66, 0, 0, 0},
 		{1, 0, 0, 0, 0, 0, 0, 0},
 		{1, 0, 4, 0, 5, 0, 0, 0},
 		{1, 4, 2, 8, 1, 88, 13, 1},
@@ -37,6 +38,10 @@ var (
 
 	collider = coll.NewTileCollider(TileMap, screenWidth/8, screenHeight/8)
 )
+
+func init() {
+	collider.NonSolidTileIDs = append(collider.NonSolidTileIDs, 33, 66)
+}
 
 type Game struct {
 }
@@ -63,7 +68,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw tiles
 	for y := range len(TileMap) {
 		for x := range len(TileMap[y]) {
-			if TileMap[y][x] != 0 {
+			if !slices.Contains(collider.NonSolidTileIDs, collider.TileMap[y][x]) {
 				vector.FillRect(screen,
 					float32(x*collider.CellSize.X),
 					float32(y*collider.CellSize.Y),

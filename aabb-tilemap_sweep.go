@@ -3,6 +3,7 @@ package coll
 import (
 	"image"
 	"math"
+	"slices"
 
 	"github.com/setanarut/v"
 )
@@ -15,17 +16,18 @@ type TileHitInfo struct {
 
 // TileCollider handles collision detection between AABB and [][]uint8 2D tilemap
 type TileCollider struct {
-	Collisions     []TileHitInfo // List of collisions from last check
-	CellSize       image.Point   // Width and height of tiles
-	TileMap        [][]uint8     // 2D grid of tile IDs
-	NonSolidTileID uint8         // Sets the ID of non-solid tiles. Defaults to 0.
+	Collisions      []TileHitInfo // List of collisions from last check
+	CellSize        image.Point   // Width and height of tiles
+	TileMap         [][]uint8     // 2D grid of tile IDs
+	NonSolidTileIDs []uint8       // Sets the ID of non-solid tiles. Defaults to 0.
 }
 
 // NewTileCollider creates a new tile collider with the given tilemap and tile dimensions
 func NewTileCollider(tileMap [][]uint8, tileWidth, tileHeight int) *TileCollider {
 	return &TileCollider{
-		TileMap:  tileMap,
-		CellSize: image.Point{tileWidth, tileHeight},
+		TileMap:         tileMap,
+		CellSize:        image.Point{tileWidth, tileHeight},
+		NonSolidTileIDs: []uint8{0},
 	}
 }
 
@@ -89,7 +91,7 @@ func (c *TileCollider) CollideX(aabb *AABB, deltaX float64) float64 {
 				if x < 0 || x >= len(c.TileMap[0]) {
 					continue
 				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
+				if !slices.Contains(c.NonSolidTileIDs, c.TileMap[y][x]) {
 					tileLeft := float64(x * c.CellSize.X)
 					collision := tileLeft - (aabb.Pos.X + aabb.Half.X)
 					if collision <= deltaX {
@@ -119,7 +121,7 @@ func (c *TileCollider) CollideX(aabb *AABB, deltaX float64) float64 {
 				if x < 0 || x >= len(c.TileMap[0]) {
 					continue
 				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
+				if !slices.Contains(c.NonSolidTileIDs, c.TileMap[y][x]) {
 					tileRight := float64((x + 1) * c.CellSize.X)
 					collision := tileRight - rectLeft
 					if collision >= deltaX {
@@ -162,7 +164,7 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 				if y < 0 || y >= len(c.TileMap) {
 					continue
 				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
+				if !slices.Contains(c.NonSolidTileIDs, c.TileMap[y][x]) {
 					tileTop := float64(y * c.CellSize.Y)
 					collision := tileTop - rectBottom
 					if collision <= deltaY {
@@ -191,7 +193,7 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 				if y < 0 || y >= len(c.TileMap) {
 					continue
 				}
-				if c.TileMap[y][x] != c.NonSolidTileID {
+				if !slices.Contains(c.NonSolidTileIDs, c.TileMap[y][x]) {
 					tileBottom := float64((y + 1) * c.CellSize.Y)
 					collision := tileBottom - rectTop
 					if collision >= deltaY {
