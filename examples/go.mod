@@ -1,11 +1,11 @@
 module github.com/setanarut/coll/examples
 
-go 1.25.4
+go 1.25
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.9.4
 	github.com/setanarut/coll v0.0.0
-	github.com/setanarut/v v1.2.1
+	github.com/setanarut/v v1.2.2
 	golang.org/x/image v0.33.0
 )
 
