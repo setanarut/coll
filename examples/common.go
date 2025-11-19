@@ -18,8 +18,8 @@ func StrokeCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
 	vector.StrokeCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), 2, clr, true)
 }
 
-func FillCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
-	vector.FillCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), clr, true)
+func FillCircle(dst *ebiten.Image, origin v.Vec, radius float64, clr color.Color) {
+	vector.FillCircle(dst, float32(origin.X), float32(origin.Y), float32(radius), clr, true)
 }
 
 func StrokeAABB(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
@@ -43,7 +43,7 @@ func FillAABB(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 }
 
 func DrawHitNormal(dst *ebiten.Image, hit *coll.HitInfo, clr color.Color, arrow bool) {
-	DrawRay(dst, hit.Pos, hit.Normal, 6, clr, arrow)
+	DrawRay(dst, hit.Pos, hit.Normal, 12, clr, arrow)
 }
 
 func CursorPos() v.Vec {
@@ -82,7 +82,7 @@ func DrawRay(s *ebiten.Image, pos, dir v.Vec, length float64, clr color.Color, a
 
 	if arrow {
 		arrowLen := 6.0
-		arrowAngle := math.Pi / 6 // 30 degree
+		arrowAngle := math.Pi / 7
 
 		unitDir := dir.Unit()
 

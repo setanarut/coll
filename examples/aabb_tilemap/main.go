@@ -89,7 +89,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrintAt(screen,
 			fmt.Sprintf(
 				"Tile ID: %d, Tile Coords: %v, Collision Normal: %v",
-				c.TileID,
+				collider.TileMap[c.TileCoords.X][c.TileCoords.Y],
 				c.TileCoords,
 				c.Normal,
 			), 20, 20+(i*20))

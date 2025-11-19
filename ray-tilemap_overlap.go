@@ -7,17 +7,7 @@ import (
 	"github.com/setanarut/v"
 )
 
-// HitRayInfo structure stores the result of the DDA (Digital Differential Analysis) raycast operation
-type HitRayInfo struct {
-	// The distance from origin to the hit point
-	Distance float64
-	// The exact coordinates of where the ray hit
-	Point v.Vec
-	// The grid cell coordinates that were hit
-	Cell image.Point
-	// The surface normal at the hit point
-	Normal v.Vec
-}
+// Removed local HitInfo struct to use the shared one from coll.go
 
 // RaycastDDA performs the DDA (Digital Differential Analysis) algorithm to find intersections with a tile map
 //
@@ -28,7 +18,11 @@ type HitRayInfo struct {
 //   - dir: Direction unit vector of the ray (should be normalized)
 //   - length: Maximum distance the ray can travel
 //   - tileMap: 2D grid of cells where any non-zero value represents a wall/obstacle
-func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool {
+//
+// Returns:
+//   - bool: True if a collision occurred
+//   - image.Point: The grid coordinates of the wall that was hit (0,0 if no hit)
+func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitInfo) (bool, image.Point) {
 	// Bitiş noktasını hesapla
 	end := start.Add(dir.Scale(length))
 
@@ -57,17 +51,28 @@ func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize fl
 		if cell.X >= 0 && cell.X < len(tileMap[0]) && cell.Y >= 0 && cell.Y < len(tileMap) {
 			if tileMap[cell.Y][cell.X] != 0 {
 				// Çarpışma noktasını kaydet
-				hit.Point = current
-				hit.Cell = cell
-				hit.Distance = current.Sub(start).Mag()
+				hit.Pos = current
+				hit.Normal = v.Vec{}
+				hit.Delta = v.Vec{}
+				hit.Time = 0
+
+				// Mesafe ve zaman (0..1) hesapla
+				distance := current.Sub(start).Mag()
+				if length > 0 {
+					hit.Time = distance / length
+				}
+
+				// Kalan hareket vektörü (başlangıçtan hedefe kadar - gittiğimiz mesafe)
+				remaining := length - distance
+				if remaining < 0 {
+					remaining = 0
+				}
+				hit.Delta = dir.Scale(remaining)
 
 				// Yüzey normalini hesapla
-				// Hangi yüzeye çarptığını belirle (X veya Y yüzeyi)
 				cellCenterX := float64(cell.X)*cellSize + cellSize/2
 				cellCenterY := float64(cell.Y)*cellSize + cellSize/2
 
-				// Çarpışma noktasının hücre merkezine göre pozisyonunu kullanarak
-				// hangi yüzeye çarptığını belirle
 				diffX := math.Abs(current.X - cellCenterX)
 				diffY := math.Abs(current.Y - cellCenterY)
 
@@ -79,7 +84,8 @@ func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize fl
 					hit.Normal = v.Vec{X: 0, Y: -math.Copysign(1, dir.Y)}
 				}
 
-				return true
+				// Return true and the cell coordinate
+				return true, cell
 			}
 		}
 
@@ -87,13 +93,16 @@ func RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize fl
 		current = current.Add(inc)
 	}
 
-	// Çarpışma bulunamadı, maksimum bitiş noktasını döndür
-	hit.Point = end
-	// hit.Cell = image.Point{
-	// 	X: int(end.X / cellSize),
-	// 	Y: int(end.Y / cellSize),
-	// }
-	hit.Distance = length
-	hit.Normal = v.Vec{} // Sıfır vektör
-	return false
+	// Çarpışma bulunamadı
+	hit.Pos = end
+	hit.Normal = v.Vec{}
+	hit.Delta = v.Vec{}
+	if length > 0 {
+		hit.Time = 1.0
+	} else {
+		hit.Time = 0.0
+	}
+
+	// Return false and an empty point
+	return false, image.Point{}
 }

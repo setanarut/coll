@@ -9,7 +9,6 @@ import (
 
 // TileHitInfo stores information about a collision with a tile
 type TileHitInfo struct {
-	TileID     uint8       // ID of the collided tile
 	TileCoords image.Point // X,Y coordinates of the tile in the tilemap
 	Normal     v.Vec       // Normal vector of the collision (-1/0/1)
 }
@@ -96,7 +95,6 @@ func (c *TileCollider) CollideX(aabb *AABB, deltaX float64) float64 {
 					if collision <= deltaX {
 						deltaX = collision
 						c.Collisions = append(c.Collisions, TileHitInfo{
-							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
 							Normal:     v.Left,
 						})
@@ -127,7 +125,6 @@ func (c *TileCollider) CollideX(aabb *AABB, deltaX float64) float64 {
 					if collision >= deltaX {
 						deltaX = collision
 						c.Collisions = append(c.Collisions, TileHitInfo{
-							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
 							Normal:     v.Right,
 						})
@@ -171,7 +168,6 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 					if collision <= deltaY {
 						deltaY = collision
 						c.Collisions = append(c.Collisions, TileHitInfo{
-							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
 							Normal:     v.Up,
 						})
@@ -201,7 +197,6 @@ func (c *TileCollider) CollideY(rect *AABB, deltaY float64) float64 {
 					if collision >= deltaY {
 						deltaY = collision
 						c.Collisions = append(c.Collisions, TileHitInfo{
-							TileID:     c.TileMap[y][x],
 							TileCoords: image.Point{x, y},
 							Normal:     v.Down,
 						})

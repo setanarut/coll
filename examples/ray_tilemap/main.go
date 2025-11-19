@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"log"
 	"math"
 
@@ -9,43 +10,49 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
+	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
 	"golang.org/x/image/colornames"
 )
 
-var screen = v.Vec{600, 600}
+var screen = v.Vec{400, 180}
 
 var (
-	hitRayInfo = &coll.HitRayInfo{}
-	IsHit      bool
-	start      = screen.Scale(0.6)
-	angle      float64
-	TileMap    = [][]uint8{
-		{0, 1, 1, 1, 6, 0, 1},
-		{0, 0, 1, 0, 1, 0, 0},
-		{0, 0, 0, 0, 8, 3, 1},
-		{0, 1, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 1, 0},
-		{0, 4, 0, 5, 0, 0, 0},
-		{4, 2, 8, 1, 88, 13, 1},
+	hitInfo = &coll.HitInfo{}
+	IsHit   bool
+	start   = screen.Scale(0.5)
+	angle   float64
+	TileMap = [][]uint8{
+		{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 6, 0, 1},
+		{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 3, 1},
+		{0, 1, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+		{0, 4, 0, 5, 5, 5, 5, 0, 5, 5, 5, 5, 0, 0, 0},
+		{4, 2, 8, 1, 1, 1, 1, 0, 1, 1, 1, 1, 88, 13, 1},
 	}
-	cellSize = 100
+	cellSize = 25
+	dir      v.Vec
+	coords   image.Point
+	collided bool
 )
 
 type Game struct{}
 
 func (g *Game) Update() error {
-	angle += 0.02
+	angle += 0.01
 	if angle >= 2*math.Pi {
 		angle = 0
 	}
-	dir := v.FromAngle(angle)
+	dir = v.FromAngle(angle)
 
-	coll.RaycastDDA(start, dir, 400, TileMap, float64(cellSize), hitRayInfo) // length'i 600 yaptık
+	collided, coords = coll.RaycastDDA(start, dir, 400, TileMap, float64(cellSize), hitInfo)
+
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
+	// draw tiles
 	for y := range TileMap {
 		for x := range TileMap[y] {
 			if TileMap[y][x] != 0 {
@@ -55,44 +62,18 @@ func (g *Game) Draw(s *ebiten.Image) {
 					float32(cellSize),
 					float32(cellSize),
 					1,
-					colornames.Blue,
+					colornames.Gray,
 					false)
 			}
 		}
 	}
 
-	// ray
-	vector.StrokeLine(
-		s,
-		float32(start.X),
-		float32(start.Y),
-		float32(hitRayInfo.Point.X),
-		float32(hitRayInfo.Point.Y),
-		2,
-		colornames.Yellow,
-		true)
+	examples.DrawSegment(s, start, hitInfo.Pos, colornames.Green)
+	examples.DrawHitNormal(s, hitInfo, colornames.Yellow, true)
 
-	// dot
-	vector.FillCircle(
-		s,
-		float32(hitRayInfo.Point.X),
-		float32(hitRayInfo.Point.Y),
-		5,
-		colornames.Red,
-		true,
-	)
-	//normal
-	vector.StrokeLine(
-		s,
-		float32(hitRayInfo.Point.X),
-		float32(hitRayInfo.Point.Y),
-		float32(hitRayInfo.Point.X+hitRayInfo.Normal.X*30),
-		float32(hitRayInfo.Point.Y+hitRayInfo.Normal.Y*30),
-		2,
-		colornames.Yellow,
-		true)
-
-	ebitenutil.DebugPrint(s, fmt.Sprintf("%v", hitRayInfo.Cell))
+	// collision info
+	examples.PrintHitInfoAt(s, hitInfo, 10, 10)
+	ebitenutil.DebugPrintAt(s, fmt.Sprintf("Coords: %v", coords), 10, 100)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
