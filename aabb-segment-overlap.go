@@ -6,7 +6,7 @@ import (
 	"github.com/setanarut/v"
 )
 
-// AABBSegmentOverlap returns true if they intersect, false otherwise
+// AABBSegmentOverlap returns true if they intersect, false otherwise.
 //
 // Params:
 //
@@ -14,7 +14,7 @@ import (
 //   - start - Line segment origin/start position
 //   - delta - Line segment move/displacement vector
 //   - padding - Padding added to the radius of the bounding box
-//   - hitInfo - Contact info. Filled when argument isn't nil and a collision occurs
+//   - hitInfo - Contact info for segment. Filled when argument isn't nil and a collision occurs
 func AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool {
 	scale := v.One.Div(delta)
 	signX := math.Copysign(1, scale.X)

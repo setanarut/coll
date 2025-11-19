@@ -50,6 +50,12 @@ plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line
 - [x] ray-tilemap
 - [x] aabb-tilemap
 
+## Examples 
+
+1. Clone this repository
+2. In the terminal, change to the examples directory `cd examples`
+3. Run a folder with `go run ./foldername`. Example: `go run ./aabb_aabb_sweep1 `
+
 ## Credits
 
 Most of these collision checks were adapted from existing open source repos:

@@ -38,7 +38,7 @@ func (g *Game) Update() error {
 
 	circleVelocity = examples.CursorPos().Sub(circle.Pos)
 
-	overlap = coll.AABBCircleSweep(
+	overlap = coll.AABBCircleSweep2(
 		box,
 		circle,
 		boxVelocity,

@@ -2,7 +2,7 @@ package coll
 
 import (
 	"github.com/setanarut/v"
-) // External package for the Vector (Vec) type.
+)
 
 // AABB represents an Axis-Aligned Bounding Box.
 type AABB struct {
@@ -62,6 +62,7 @@ func NewCircle(x, y, radius float64) *Circle {
 	return &Circle{Pos: v.Vec{x, y}, Radius: radius}
 }
 
+// Segment shape with A and B points.
 type Segment struct {
 	A, B v.Vec
 }
