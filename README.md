@@ -1,4 +1,5 @@
 [![GoDoc](https://godoc.org/github.com/setanarut/coll?status.svg)](https://pkg.go.dev/github.com/setanarut/coll)
+
 # coll - 2d collision library for Go
 
 There are many Go collision libraries for 2d. None satisifed all of these criteria:
@@ -56,7 +57,7 @@ AABBAABBSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool
 AABBAABBSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 ```
 
-## AABB-Segment sweep 1
+### AABB-Segment sweep 1
 
 ```go
 AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
@@ -64,7 +65,7 @@ AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 
 ![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
 
-## AABB-Point overlap
+### AABB-Point overlap
 
 ```go
 AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
@@ -72,7 +73,7 @@ AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
 
 ![AABB-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
 
-## AABB-Segment overlap
+### AABB-Segment overlap
 
 ```go
 AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool
@@ -80,24 +81,23 @@ AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) boo
 
 ![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
 
-## AABB-Circle sweep 2
+### AABB-Circle sweep 2
 
 ```go
 AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ```
 
-## AABB-Tilemap sweep
+### AABB-Tilemap sweep
 
 ```go
 (c *TileCollider) Collide(box AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec
 ```
 
-## Ray-Tilemap overlap (DDA)
+### Ray-Tilemap overlap (DDA)
 
 ```go
 RaycastDDA(start, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitRayInfo) bool
 ```
-
 
 ## Examples (Ebitengine)
 
