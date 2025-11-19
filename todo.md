@@ -5,7 +5,7 @@
 - [x] aabb-aabb-sweep1
 - [x] aabb-aabb-sweep2
 - [x] aabb-segment-sweep1
-- [ ] aabb-segments-sweep-indexed
+- [x] aabb-segments-sweep-indexed
 - [x] aabb-point-overlap
 - [x] aabb-segment-overlap
 - [ ] ray-plane-distance
