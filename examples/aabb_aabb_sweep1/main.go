@@ -43,7 +43,7 @@ type Game struct {
 
 func (g *Game) Update() error {
 	angle += 0.5 * math.Pi * 0.02
-	factor = math.Max((math.Cos(angle)+1)*0.5, 1e-8)
+	factor = max((math.Cos(angle)+1)*0.5, 1e-8)
 
 	for i, box := range sweepBoxes {
 		deltas[i] = sweepDeltas[i].Scale(factor)

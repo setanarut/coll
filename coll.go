@@ -8,6 +8,7 @@ import (
 )
 
 const Epsilon float64 = 1e-8
+const Padding = 0.005
 
 // HitInfo holds the detailed information about a collision or contact event.
 type HitInfo struct {
@@ -240,13 +241,13 @@ func AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool {
 
 // AABBCircleSweep checks for collision between a moving AABB and a moving Circle.
 // Returns true if collision occurs during movement, false otherwise.
-func AABBCircleSweep(box *AABB, circle *Circle, boxVel, CircleVel v.Vec) bool {
+func AABBCircleSweep(aabb *AABB, circle *Circle, boxVel, CircleVel v.Vec) bool {
 	// Calculate circle's movement relative to AABB (AABB becomes stationary reference frame)
 	relativeDelta := CircleVel.Sub(boxVel)
 
 	// Use Segment to check if circle (treated as point with radius padding) hits the AABB
 	// padding expands AABB by circle's radius to simplify collision detection
-	return AABBSegmentOverlap(box, circle.Pos, relativeDelta, v.Vec{X: circle.Radius, Y: circle.Radius}, nil)
+	return AABBSegmentOverlap(aabb, circle.Pos, relativeDelta, v.Vec{X: circle.Radius, Y: circle.Radius}, nil)
 }
 
 // CalculateSlideVelocity computes the total movement: movement until collision plus sliding along the surface normal.
@@ -258,6 +259,6 @@ func CalculateSlideVelocity(vel v.Vec, hitInfo *HitInfo) (slideVel v.Vec) {
 }
 
 // ApplySlideVelocity updates the AABB position by applying the calculated slide velocity.
-func ApplySlideVelocity(box *AABB, vel v.Vec, hitInfo *HitInfo) {
-	box.Pos = box.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
+func ApplySlideVelocity(aabb *AABB, vel v.Vec, hitInfo *HitInfo) {
+	aabb.Pos = aabb.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
 }

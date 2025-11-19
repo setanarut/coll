@@ -40,6 +40,12 @@ func (a *AABB) Width() float64 { return a.Half.X * 2 }
 // Returns the total height (Y dimension) of the box.
 func (a *AABB) Height() float64 { return a.Half.Y * 2 }
 
+// Returns top-left point
+func (a *AABB) Min() v.Vec { return v.Vec{a.Left(), a.Top()} }
+
+// Returns bottom-right point
+func (a *AABB) Max() v.Vec { return v.Vec{a.Right(), a.Bottom()} }
+
 // NewAABB returns new AABB
 func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
 	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
@@ -54,4 +60,8 @@ type Circle struct {
 // NewCircle returns new Circle
 func NewCircle(x, y, radius float64) *Circle {
 	return &Circle{Pos: v.Vec{x, y}, Radius: radius}
+}
+
+type Segment struct {
+	A, B v.Vec
 }

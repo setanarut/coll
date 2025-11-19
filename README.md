@@ -28,7 +28,7 @@ plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line
 - [x] aabb-aabb contain
 - [x] aabb-aabb sweep 1
 - [x] aabb-aabb sweep 2
-- [x] aabb-segment sweep
+- [x] aabb-segment sweep1
 - [ ] aabb-segments sweep-indexed
 - [x] aabb-point overlap
 - [x] aabb-segment overlap
