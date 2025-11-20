@@ -65,7 +65,7 @@ AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 ![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
 
 ```go
-AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (bool, int)
+AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)  (index int)
 ```
 
 ### AABB-Point overlap
