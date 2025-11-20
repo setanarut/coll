@@ -49,7 +49,7 @@ func (g *Game) Update() error {
 	factor := max((math.Cos(angle)+1)*0.5, 1e-8)
 	delta = sweepDelta.Scale(factor)
 
-	collided, index = coll.AABBSegmentSweep1Indexed(staticLines, box, delta, hit)
+	index = coll.AABBSegmentSweep1Indexed(staticLines, box, delta, hit)
 
 	return nil
 }
@@ -60,7 +60,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		examples.DrawSegment(s, line.A, line.B, colornames.Gray)
 	}
 
-	if collided {
+	if index >= 0 {
 		// Draw a red box at the point where it was trying to move to
 		examples.DrawRay(s, box.Pos, delta.Unit(), delta.Mag(), colornames.Red, true)
 		tempBox.Pos = box.Pos.Add(delta)

@@ -11,9 +11,9 @@ import (
 // at the minimum time value. If a collision is found, the provided hitInfo struct
 // is updated with the details of that closest intersection.
 //
-// Returns true if a collision occurred, along with the index of the colliding segment.
-// Returns false and -1 if no collision was detected.
-func AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (bool, int) {
+// Returns index if a collision occurred, along with the index of the colliding segment.
+// Returns -1 if no collision was detected.
+func AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (index int) {
 	colliderIndex := -1
 	var resHitTime float64
 	var tmpHitInfo HitInfo
@@ -27,6 +27,5 @@ func AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo
 			}
 		}
 	}
-
-	return colliderIndex >= 0, colliderIndex
+	return colliderIndex
 }
