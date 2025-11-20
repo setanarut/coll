@@ -84,6 +84,14 @@ AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) boo
 
 ![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
 
+### Ray-Circle overlap
+
+```go
+RayCircleOverlap(raySeg *Segment, circ *Circle, overlapSeg *Segment) bool
+```
+
+![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/ray-sphere-overlap.png)
+
 ### AABB-Circle sweep 2
 
 ```go

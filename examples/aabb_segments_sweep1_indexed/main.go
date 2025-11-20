@@ -57,7 +57,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(s *ebiten.Image) {
 
 	for _, line := range staticLines {
-		examples.DrawSegment(s, line.A, line.B, colornames.Gray)
+		examples.DrawLine(s, line.A, line.B, colornames.Gray)
 	}
 
 	if index >= 0 {

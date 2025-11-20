@@ -51,7 +51,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-	examples.DrawSegment(s, staticLine.A, staticLine.B, colornames.Gray)
+	examples.DrawLine(s, staticLine.A, staticLine.B, colornames.Gray)
 
 	if collided {
 		// Draw a red box at the point where it was trying to move to

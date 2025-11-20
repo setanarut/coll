@@ -78,7 +78,7 @@ func Axis() (axis v.Vec) {
 
 func DrawRay(s *ebiten.Image, pos, dir v.Vec, length float64, clr color.Color, arrow bool) {
 	end := pos.Add(dir.Unit().Scale(length))
-	DrawSegment(s, pos, end, clr)
+	DrawLine(s, pos, end, clr)
 
 	if arrow {
 		arrowLen := 6.0
@@ -89,11 +89,14 @@ func DrawRay(s *ebiten.Image, pos, dir v.Vec, length float64, clr color.Color, a
 		left := unitDir.Rotate(math.Pi - arrowAngle).Scale(arrowLen)
 		right := unitDir.Rotate(-(math.Pi - arrowAngle)).Scale(arrowLen)
 
-		DrawSegment(s, end, end.Add(left), clr)
-		DrawSegment(s, end, end.Add(right), clr)
+		DrawLine(s, end, end.Add(left), clr)
+		DrawLine(s, end, end.Add(right), clr)
 	}
 }
 
-func DrawSegment(s *ebiten.Image, start, end v.Vec, clr color.Color) {
+func DrawLine(s *ebiten.Image, start, end v.Vec, clr color.Color) {
 	vector.StrokeLine(s, float32(start.X), float32(start.Y), float32(end.X), float32(end.Y), 1.5, clr, true)
+}
+func DrawSegment(s *ebiten.Image, seg *coll.Segment, clr color.Color) {
+	vector.StrokeLine(s, float32(seg.A.X), float32(seg.A.Y), float32(seg.B.X), float32(seg.B.Y), 1.5, clr, true)
 }

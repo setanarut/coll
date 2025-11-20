@@ -46,15 +46,20 @@ func (a *AABB) Min() v.Vec { return v.Vec{a.Left(), a.Top()} }
 // Returns bottom-right point
 func (a *AABB) Max() v.Vec { return v.Vec{a.Right(), a.Bottom()} }
 
-// NewAABB returns new AABB
-func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
-	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
-}
-
 // Circle represents a circular bounding volume.
 type Circle struct {
 	Pos    v.Vec   // Center position of the circle.
 	Radius float64 // The radius of the circle.
+}
+
+// Segment shape with A and B points.
+type Segment struct {
+	A, B v.Vec
+}
+
+// NewAABB returns new AABB
+func NewAABB(centerX, centerY, halfWidth, halfHeight float64) *AABB {
+	return &AABB{Pos: v.Vec{centerX, centerY}, Half: v.Vec{halfWidth, halfHeight}}
 }
 
 // NewCircle returns new Circle
@@ -62,7 +67,7 @@ func NewCircle(x, y, radius float64) *Circle {
 	return &Circle{Pos: v.Vec{x, y}, Radius: radius}
 }
 
-// Segment shape with A and B points.
-type Segment struct {
-	A, B v.Vec
+// NewSegment returns new Segment
+func NewSegment(ax, ay, bx, by float64) *Segment {
+	return &Segment{A: v.Vec{ax, ay}, B: v.Vec{bx, by}}
 }

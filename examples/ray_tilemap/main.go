@@ -68,7 +68,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		}
 	}
 
-	examples.DrawSegment(s, start, hitInfo.Pos, colornames.Green)
+	examples.DrawLine(s, start, hitInfo.Pos, colornames.Green)
 	examples.DrawHitNormal(s, hitInfo, colornames.Yellow, true)
 
 	// collision info
