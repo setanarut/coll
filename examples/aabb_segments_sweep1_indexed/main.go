@@ -18,7 +18,7 @@ var (
 	delta v.Vec
 	angle float64
 
-	staticLines = []*coll.Segment{
+	staticSegments = []*coll.Segment{
 		{v.Vec{350, 261}, v.Vec{220, 210}},
 		{v.Vec{350, 235}, v.Vec{220, 190}},
 		{v.Vec{346, 278}, v.Vec{228, 235}},
@@ -28,9 +28,8 @@ var (
 	sweepDelta = v.Vec{32, -96}
 	tempBox    = coll.NewAABB(250, 250, 16, 16)
 
-	hit      = &coll.HitInfo{}
-	collided bool
-	index    int
+	hit   = &coll.HitInfo{}
+	index int
 )
 
 func main() {
@@ -49,15 +48,15 @@ func (g *Game) Update() error {
 	factor := max((math.Cos(angle)+1)*0.5, 1e-8)
 	delta = sweepDelta.Scale(factor)
 
-	index = coll.AABBSegmentSweep1Indexed(staticLines, box, delta, hit)
+	index = coll.AABBSegmentSweep1Indexed(staticSegments, box, delta, hit)
 
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
 
-	for _, line := range staticLines {
-		examples.DrawLine(s, line.A, line.B, colornames.Gray)
+	for _, seg := range staticSegments {
+		examples.DrawSegment(s, seg, colornames.Gray)
 	}
 
 	if index >= 0 {
