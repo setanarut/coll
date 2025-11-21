@@ -6,12 +6,8 @@ Features
 
 * Collisions only - no gravity, rigid body handling, or complex solvers
 * Is data-oriented and functional
-* Consistent API interface
 
 ## Conventions
-
-All collision checking functions return a bool indicating if there was a collision.
-They also accept an optional `hitInfo` argument (nil), which gets filled in if there is an actual collision.  
 
 "Sweep" tests indicate at least 1 of the objects is moving. 
 The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
@@ -70,27 +66,35 @@ AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *Hit
 
 ### AABB-Point overlap
 
+![AABB-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
+
 ```go
 AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
 ```
 
-![AABB-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
-
 ### AABB-Segment overlap
+
+![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
 
 ```go
 AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool
 ```
 
-![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
-
 ### Ray-Circle overlap
+
+![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/ray-sphere-overlap.png)
 
 ```go
 RayCircleOverlap(raySeg *Segment, circ *Circle, overlapSeg *Segment) bool
 ```
 
-![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/ray-sphere-overlap.png)
+### Segment-Circle overlap
+
+![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/segment-sphere-overlap.png)
+
+```go
+SegmentCircleOverlap(seg *Segment, c *Circle) []v.Vec
+```
 
 ### AABB-Circle sweep 2
 
