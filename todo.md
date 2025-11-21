@@ -11,7 +11,7 @@
 - [ ] ray-plane-distance
 - [x] ray-circle-overlap
 - [x] segment-circle-overlap
-- [ ] segment-normal
+- [x] segment-normal
 - [ ] segment-point-overlap
 - [ ] segment-segment-overlap
 - [ ] segments-segment-overlap
