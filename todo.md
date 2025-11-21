@@ -9,8 +9,8 @@
 - [x] aabb-point-overlap
 - [x] aabb-segment-overlap
 - [ ] ray-plane-distance
-- [ ] ray-circle-overlap
-- [ ] segment-circle-overlap
+- [x] ray-circle-overlap
+- [x] segment-circle-overlap
 - [ ] segment-normal
 - [ ] segment-point-overlap
 - [ ] segment-segment-overlap
