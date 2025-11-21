@@ -1,6 +1,10 @@
 package coll
 
-import "math"
+import (
+	"math"
+
+	"github.com/setanarut/v"
+)
 
 // AABBAABBOverlap checks whether boxA and boxB overlap.
 // Any collision information written to hitInfo always describes how to move boxA out of boxB.
@@ -19,16 +23,17 @@ import "math"
 // If you only need to know whether a collision occurred, pass nil for hitInfo
 // to skip generating collision details.
 func AABBAABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
+	d := boxB.Pos.Sub(boxA.Pos)
+	absD := d.Abs()
+	hSum := boxA.Half.Add(boxB.Half)
 
-	dx := boxB.Pos.X - boxA.Pos.X
-	px := boxB.Half.X + boxA.Half.X - math.Abs(dx)
+	px := hSum.X - absD.X
 
 	if px <= 0 {
 		return false
 	}
 
-	dy := boxB.Pos.Y - boxA.Pos.Y
-	py := boxB.Half.Y + boxA.Half.Y - math.Abs(dy)
+	py := hSum.Y - absD.Y
 
 	if py <= 0 {
 		return false
@@ -38,19 +43,27 @@ func AABBAABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
 		return true
 	}
 
-	// if if hitInfo is not nil, fill
 	if px < py {
-		sx := math.Copysign(1, dx)
-		hitInfo.Delta.X = px * sx
-		hitInfo.Normal.X = sx
-		hitInfo.Pos.X = boxA.Pos.X + boxA.Half.X*sx
-		hitInfo.Pos.Y = boxB.Pos.Y
+		sx := math.Copysign(1, d.X)
+
+		hitInfo.Delta = v.Vec{X: px * sx, Y: 0}
+		hitInfo.Normal = v.Vec{X: sx, Y: 0}
+
+		hitInfo.Pos = v.Vec{
+			X: boxA.Pos.X + boxA.Half.X*sx,
+			Y: boxB.Pos.Y,
+		}
+
 	} else {
-		sy := math.Copysign(1, dy)
-		hitInfo.Delta.Y = py * sy
-		hitInfo.Normal.Y = sy
-		hitInfo.Pos.X = boxB.Pos.X
-		hitInfo.Pos.Y = boxA.Pos.Y + boxA.Half.Y*sy
+		sy := math.Copysign(1, d.Y)
+
+		hitInfo.Delta = v.Vec{X: 0, Y: py * sy}
+		hitInfo.Normal = v.Vec{X: 0, Y: sy}
+
+		hitInfo.Pos = v.Vec{
+			X: boxB.Pos.X,
+			Y: boxA.Pos.Y + boxA.Half.Y*sy,
+		}
 	}
 	return true
 }
