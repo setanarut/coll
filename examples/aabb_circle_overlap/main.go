@@ -13,7 +13,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-var wall = coll.NewAABB(250, 250, 100, 25)
+var wall = coll.NewAABB(250, 250, 100, 100)
 var circle = coll.NewCircle(200, 200, 25)
 
 var hit = &coll.HitInfo{}
