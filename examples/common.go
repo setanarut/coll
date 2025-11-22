@@ -14,11 +14,17 @@ import (
 
 const WindowWidth, WindowHeight int = 500, 500
 
+func StrokeCircleAt(dst *ebiten.Image, pos v.Vec, r float64, clr color.Color) {
+	vector.StrokeCircle(dst, float32(pos.X), float32(pos.Y), float32(r), 2, clr, true)
+}
 func StrokeCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
 	vector.StrokeCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), 2, clr, true)
 }
 
-func FillCircle(dst *ebiten.Image, origin v.Vec, radius float64, clr color.Color) {
+func FillCircle(dst *ebiten.Image, c *coll.Circle, clr color.Color) {
+	vector.FillCircle(dst, float32(c.Pos.X), float32(c.Pos.Y), float32(c.Radius), clr, true)
+}
+func FillCircleAt(dst *ebiten.Image, origin v.Vec, radius float64, clr color.Color) {
 	vector.FillCircle(dst, float32(origin.X), float32(origin.Y), float32(radius), clr, true)
 }
 

@@ -48,7 +48,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	if intersectionPoints != nil {
 		examples.DrawSegment(s, &seg, colornames.Red)
 		for i := range intersectionPoints {
-			examples.FillCircle(s, intersectionPoints[i], 3, colornames.Yellow)
+			examples.FillCircleAt(s, intersectionPoints[i], 3, colornames.Yellow)
 		}
 	} else {
 		examples.DrawSegment(s, &seg, colornames.Green)

@@ -48,8 +48,8 @@ func (g *Game) Draw(s *ebiten.Image) {
 		examples.DrawSegment(s, &longRayDebug, colornames.Red)
 		examples.DrawSegment(s, &raySeg, colornames.Orange)
 		examples.DrawSegment(s, &resultSegment, colornames.Yellow)
-		examples.FillCircle(s, resultSegment.A, 5, colornames.Yellow)
-		examples.FillCircle(s, resultSegment.B, 5, colornames.Yellow)
+		examples.FillCircleAt(s, resultSegment.A, 5, colornames.Yellow)
+		examples.FillCircleAt(s, resultSegment.B, 5, colornames.Yellow)
 	} else {
 		examples.DrawSegment(s, &longRayDebug, colornames.Green)
 		examples.DrawSegment(s, &raySeg, colornames.Lightgreen)
