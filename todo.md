@@ -1,13 +1,13 @@
 # Todo
 
-- [x] aabb-aabb-overlap
-- [x] aabb-aabb-contain
-- [x] aabb-aabb-sweep1
-- [x] aabb-aabb-sweep2
-- [x] aabb-segment-sweep1
-- [x] aabb-segments-sweep-indexed
-- [x] aabb-point-overlap
-- [x] aabb-segment-overlap
+- [x] box-box-overlap
+- [x] box-box-contain
+- [x] box-box-sweep1
+- [x] box-box-sweep2
+- [x] box-segment-sweep1
+- [x] box-segments-sweep-indexed
+- [x] box-point-overlap
+- [x] box-segment-overlap
 - [ ] ray-plane-distance
 - [x] ray-circle-overlap
 - [x] segment-circle-overlap
@@ -16,7 +16,7 @@
 - [ ] segment-segment-overlap
 - [ ] segments-segment-overlap
 - [ ] segments-segment-overlap-indexed
-- [x] aabb-circle-sweep2
+- [x] box-circle-sweep2
 - [ ] segments-circle-sweep1
 - [ ] segments-circle-sweep1-indexed
 - [ ] circle-circle-overlap
@@ -24,4 +24,4 @@
 - [ ] cone-point-overlap
 - [ ] triangle-point-overlap
 - [x] ray-tilemap
-- [x] aabb-tilemap
+- [x] box-tilemap

@@ -14,20 +14,20 @@ func TestAABBPointOverlap(t *testing.T) {
 	}
 
 	t.Run("Point outside returns false", func(t *testing.T) {
-		if AABBPointOverlap(box, v.Vec{20, 0}, nil) {
+		if BoxPointOverlap(box, v.Vec{20, 0}, nil) {
 			t.Fatalf("expected no collision")
 		}
 	})
 
 	t.Run("Point inside returns true", func(t *testing.T) {
-		if !AABBPointOverlap(box, v.Vec{1, 1}, nil) {
+		if !BoxPointOverlap(box, v.Vec{1, 1}, nil) {
 			t.Fatalf("expected collision")
 		}
 	})
 
 	t.Run("HitInfo X-axis response", func(t *testing.T) {
 		var h HitInfo
-		AABBPointOverlap(box, v.Vec{9, 0}, &h)
+		BoxPointOverlap(box, v.Vec{9, 0}, &h)
 
 		if math.Abs(h.Delta.X) == 0 {
 			t.Fatalf("expected X delta")
@@ -42,7 +42,7 @@ func TestAABBPointOverlap(t *testing.T) {
 
 	t.Run("HitInfo Y-axis response", func(t *testing.T) {
 		var h HitInfo
-		AABBPointOverlap(box, v.Vec{0, 4.5}, &h)
+		BoxPointOverlap(box, v.Vec{0, 4.5}, &h)
 
 		if math.Abs(h.Delta.Y) == 0 {
 			t.Fatalf("expected Y delta")

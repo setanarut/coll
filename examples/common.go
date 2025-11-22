@@ -28,11 +28,11 @@ func FillCircleAt(dst *ebiten.Image, origin v.Vec, radius float64, clr color.Col
 	vector.FillCircle(dst, float32(origin.X), float32(origin.Y), float32(radius), clr, true)
 }
 
-func StrokeAABB(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
+func StrokeBox(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.StrokeRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), 1, clr, false)
 }
 
-func StrokeAABBAt(dst *ebiten.Image, pos, half v.Vec, clr color.Color) {
+func StrokeBoxAt(dst *ebiten.Image, pos, half v.Vec, clr color.Color) {
 	vector.StrokeRect(
 		dst,
 		float32(pos.X-half.X),
@@ -44,7 +44,7 @@ func StrokeAABBAt(dst *ebiten.Image, pos, half v.Vec, clr color.Color) {
 		false,
 	)
 }
-func FillAABB(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
+func FillBox(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.FillRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), clr, false)
 }
 

@@ -10,108 +10,108 @@ Features
 ## Conventions
 
 "Sweep" tests indicate at least 1 of the objects is moving. 
-The number indicates how many objects are moving. e.g., `aabb-aabb-sweep2` means we are comparing 2 aabbs, both of which are moving.
+The number indicates how many objects are moving. e.g., `box-box-sweep2` means we are comparing 2 aabbs, both of which are moving.
 "Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
 plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments.
 If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Available collision checks
 
-### AABB-AABB-overlap
+### Box-Box overlap
 
-![AABB-AABB-overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-overlap.png)
+![Box-Box-overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-overlap.png)
 
 ```go
-AABBAABBOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool
+BoxBoxOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool
 ```
 
-### AABB-AABB-contain
+### Box-Box contain
 
 ```go
-// AABBAABBContain returns true if a fully contains b.
-AABBAABBContain(a, b *AABB) bool
+// BoxBoxContain returns true if a fully contains b.
+BoxBoxContain(a, b *AABB) bool
 ```
 
-### AABB-AABB sweep 1
+### Box-Box sweep 1
 
-![AABB-AABB sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep1.png)
+![Box-Box sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep1.png)
 
 ```go
-AABBAABBSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool 
+BoxBoxSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool 
 ```
 
-### AABB-AABB sweep 2
+### Box-Box sweep 2
 
-![AABB-AABB sweep 2](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep2.png)
+![Box-Box sweep 2](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-aabb-sweep2.png)
 
 ```go
-AABBAABBSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
+BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 ```
 
-### AABB-Segment sweep 1
+### Box-Segment sweep 1
 
-![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
+![Box-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
 
 ```go
-AABBSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
+BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 ```
 
-### AABB-Segment sweep 1 indexed
+### Box-Segment sweep 1 indexed
 
-![AABB-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
+![Box-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
 
 ```go
-AABBSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)  (index int)
+BoxSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)  (index int)
 ```
 
-### AABB-Point overlap
+### Box-Point overlap
 
-![AABB-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
+![Box-Point overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-point-overlap.png)
 
 ```go
-AABBPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
+BoxPointOverlap(box *AABB, point v.Vec, hitInfo *HitInfo) bool
 ```
 
-### AABB-Segment overlap
+### Box-Segment overlap
 
-![AABB-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
+![Box-Segment overlap](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-overlap.png)
 
 ```go
-AABBSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool
+BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool
 ```
 
-### Ray-Circle overlap
+### Line-Circle overlap
 
-![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/ray-sphere-overlap.png)
+![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/ray-circle-overlap.png)
 
 ```go
-RayCircleOverlap(raySeg *Segment, circ *Circle, overlapSeg *Segment) bool
+LineCircleOverlap(raySeg *Segment, circ *Circle, overlapSeg *Segment) bool
 ```
 
 ### Segment-Circle overlap
 
-![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/segment-sphere-overlap.png)
+![alt text](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/segment-circle-overlap.png)
 
 ```go
 SegmentCircleOverlap(seg *Segment, c *Circle) []v.Vec
 ```
 
-### AABB-Circle sweep 2
+### Box-Circle sweep 2
 
 ```go
-AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
+BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool
 ```
 
-### AABB-Tilemap sweep
+### Box-Tilemap sweep
 
 ```go
 (c *TileCollider) Collide(box AABB, delta v.Vec, onCollide TileCollisionCallback) v.Vec
 ```
 
-### Ray-Tilemap overlap (DDA)
+### Ray-Tilemap DDA
 
 ```go
-RaycastDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h *HitInfo) (bool, image.Point) 
+RayTilemapDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h *HitInfo) (bool, image.Point) 
 ```
 
 ## Examples (Ebitengine)
