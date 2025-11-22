@@ -6,7 +6,9 @@ import (
 	"github.com/setanarut/v"
 )
 
-// Not: AABBCircleOverlap(box *AABB, circle *Circle) bool fonksiyonunun var olduğu varsayılmıştır.
+// AABBCircleSweep2 checks for collision between a moving AABB and a moving Circle.
+//
+// Returns true if collision occurs during movement, false otherwise.
 func AABBCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool {
 
 	// 1. Alanları Bir Kere Al
