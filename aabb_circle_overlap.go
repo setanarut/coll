@@ -10,66 +10,70 @@ import (
 // AABBCircleOverlap checks whether box and circle overlap.
 // Any collision information written to hitInfo always describes how to move circle out of box.
 //
-// It uses a closest-point on AABB test.
+// It uses a separating-axis test: if the circle do not overlap on either X or Y,
+// there is no collision and the function returns false.
+//
+// If hitInfo is not nil, the function fills it with:
+//   - Delta: the minimum vector needed to push boxA out of boxB
+//   - Normal: the direction in which boxA is pushed
+//   - Pos: an approximate contact position on the collision side
+//
+// This method can behave poorly for moving objects. For continuous motion,
+// AABBCircleSweep2() should be used instead.
+//
+// If you only need to know whether a collision occurred, pass nil for hitInfo
+// to skip generating collision details.
 func AABBCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
-	// 1. Daire merkezi ile Kutu merkezi arasındaki vektör (Local Space)
+	// Use AABBCircleIntersect for the initial intersection check
+	if !AABBCircleIntersect(box, circle) {
+		return false
+	}
+
+	// If we only need a boolean result, return early
+	if hitInfo == nil {
+		return true
+	}
+
+	// Calculate detailed collision information
+	// 1. Vector between circle center and box center (Local Space)
 	d := circle.Pos.Sub(box.Pos)
 
-	// 2. Kutu sınırları (Half extents) içinde d vektörünü "kelepçele" (Clamp).
-	// Bu işlem bize kutu üzerinde daire merkezine en yakın noktayı verir.
+	// 2. Clamp the d vector within the box boundaries (Half extents)
+	// This gives us the closest point on the box to the circle center
 	closest := v.Vec{
 		X: mathutils.Clamp(d.X, -box.Half.X, box.Half.X),
 		Y: mathutils.Clamp(d.Y, -box.Half.Y, box.Half.Y),
 	}
 
-	// 3. Daire merkezinin kutunun içinde olup olmadığını kontrol et.
-	// Eğer en yakın nokta ile orijinal mesafe vektörü aynıysa, daire merkezi kutunun içindedir.
-	inside := false
-	if d.Equals(closest) {
-		inside = true
-	}
+	// 3. Check if the circle center is inside the box
+	// If the closest point equals the original distance vector, the circle center is inside
+	inside := d.Equals(closest)
 
-	// --- Dışarıda Olma Durumu (Genel Çarpışma) ---
+	// --- Outside Case (General Collision) ---
 	if !inside {
-		// closest noktası kutu yüzeyindedir.
-		// normal: closest noktasından daire merkezine giden vektör.
+		// The closest point is on the box surface
+		// normal: vector from closest point to circle center
 		normal := d.Sub(closest)
 		distSq := normal.MagSq()
-		radiusSq := circle.Radius * circle.Radius
-
-		// Mesafe yarıçaptan büyükse çarpışma yoktur.
-		if distSq > radiusSq {
-			return false
-		}
-
-		// Çarpışma var ancak detay istenmiyor.
-		if hitInfo == nil {
-			return true
-		}
-
 		dist := math.Sqrt(distSq)
 
-		// Normali normalize et
+		// Normalize the normal vector
 		hitInfo.Normal = normal.DivS(dist)
 
-		// Penetrasyon miktarı: Yarıçap - Merkezden yüzeye olan uzaklık
+		// Penetration amount: Radius - Distance from center to surface
 		penetration := circle.Radius - dist
 		hitInfo.Delta = hitInfo.Normal.Scale(penetration)
 
-		// Temas noktası kutu üzerindeki closest noktasıdır (Dünya koordinatlarına çevrilir)
+		// Contact point is the closest point on the box (converted to world coordinates)
 		hitInfo.Pos = box.Pos.Add(closest)
 
 	} else {
-		// --- İçeride Olma Durumu (Merkez Kutunun İçinde) ---
-		// Daire merkezi kutunun tamamen içinde.
-		// AABBAABBOverlap mantığıyla en yakın kenardan dışarı itiyoruz.
+		// --- Inside Case (Center Inside Box) ---
+		// Circle center is completely inside the box
+		// Use AABB-AABB overlap logic to push out from the closest edge
 
-		if hitInfo == nil {
-			return true
-		}
-
-		// Burası AABBAABBOverlap mantığı ile birebir aynıdır.
-		// Hangi eksene (X veya Y) daha yakınsak o taraftan dışarı iteriz.
+		// This logic is exactly the same as in AABBAABBOverlap
+		// We push out from the edge we're closest to
 		absD := d.Abs()
 		px := box.Half.X - absD.X
 		py := box.Half.Y - absD.Y
@@ -80,7 +84,7 @@ func AABBCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 			hitInfo.Delta = v.Vec{X: px * sx, Y: 0}
 			hitInfo.Normal = v.Vec{X: sx, Y: 0}
 
-			// X eksenindeki kenar noktası
+			// Edge point on X axis
 			hitInfo.Pos = v.Vec{
 				X: box.Pos.X + box.Half.X*sx,
 				Y: circle.Pos.Y,
@@ -91,7 +95,7 @@ func AABBCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 			hitInfo.Delta = v.Vec{X: 0, Y: py * sy}
 			hitInfo.Normal = v.Vec{X: 0, Y: sy}
 
-			// Y eksenindeki kenar noktası
+			// Edge point on Y axis
 			hitInfo.Pos = v.Vec{
 				X: circle.Pos.X,
 				Y: box.Pos.Y + box.Half.Y*sy,
