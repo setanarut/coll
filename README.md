@@ -12,7 +12,7 @@ Features
 "Sweep" tests indicate at least 1 of the objects is moving. 
 The number indicates how many objects are moving. e.g., `box-box-sweep2` means we are comparing 2 aabbs, both of which are moving.
 "Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
-plural forms imply a collection. e.g., `BoxSegmentSweep1Indexed()` checks one box segment against a set of line segments.
+plural forms imply a collection. e.g., `BoxSegmentsSweep1Indexed()` checks one box segment against a set of line segments.
 If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Available collision checks
