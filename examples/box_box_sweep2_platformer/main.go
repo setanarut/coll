@@ -52,8 +52,6 @@ func (g *Game) Update() error {
 	hitInfoBoxB.Reset()
 	if coll.BoxBoxSweep2(platform, box, platformVelocity, boxVelocity, hitInfoBoxB) {
 		coll.CollideAndSlide(box, boxVelocity, hitInfoBoxB)
-		// vel := boxVelocity.Add(boxVelocity)
-		// box.Pos = box.Pos.Add(vel)
 		box.Pos = box.Pos.Add(platformVelocity)
 
 		if hitInfoBoxB.Normal.Y != 0 {
