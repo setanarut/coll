@@ -15,7 +15,7 @@ var (
 	boxVelocity = v.Vec{4, 0}
 )
 var (
-	circle         = coll.NewCircle(100, 100, 16)
+	circle         = coll.NewCircle(100, 100, 8)
 	circleVelocity = v.Vec{-4, 0}
 )
 

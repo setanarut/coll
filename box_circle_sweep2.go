@@ -10,13 +10,18 @@ import (
 //
 // Returns true if collision occurs during movement, false otherwise.
 func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool {
-
 	boxMin := box.Min()
 	boxMax := box.Max()
 	R := circle.Radius
 	R_sq := R * R
 
-	if boxCircleIntersect(box, circle) {
+	closestX := max(boxMin.X, min(circle.Pos.X, boxMax.X))
+	closestY := max(boxMin.Y, min(circle.Pos.Y, boxMax.Y))
+
+	distX := circle.Pos.X - closestX
+	distY := circle.Pos.Y - closestY
+
+	if (distX*distX + distY*distY) <= R_sq {
 		return true
 	}
 
@@ -64,8 +69,9 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool {
 	if t_enter > t_exit || t_enter > 1.0 {
 		return false
 	}
-	corners := []v.Vec{boxMin, {X: boxMax.X, Y: boxMin.Y}, boxMax, {X: boxMin.X, Y: boxMax.Y}}
+
 	min_t_corner := 2.0
+	corners := []v.Vec{boxMin, {X: boxMax.X, Y: boxMin.Y}, boxMax, {X: boxMin.X, Y: boxMax.Y}}
 
 	for _, corner := range corners {
 		P_diff := circle.Pos.Sub(corner)
@@ -96,6 +102,5 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec) bool {
 	}
 
 	final_t_col := min(t_enter, min_t_corner)
-
 	return final_t_col > 0.0 && final_t_col <= 1.0
 }

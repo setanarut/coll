@@ -11,8 +11,8 @@ import (
 // Params:
 //
 //   - box - Bounding box to check
-//   - start - Line segment origin/start position
-//   - delta - Line segment move/displacement vector
+//   - start - Ray segment origin/start position
+//   - delta - Ray segment move/displacement vector
 //   - padding - Padding added to the radius of the bounding box
 //   - hitInfo - Contact info for segment. Filled when argument isn't nil and a collision occurs
 func BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool {

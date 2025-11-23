@@ -23,22 +23,26 @@ import (
 // If you only need to know whether a collision occurred, pass nil for hitInfo
 // to skip generating collision details.
 func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
-	if !boxCircleIntersect(box, circle) {
+
+	// intersection test
+	diff := circle.Pos.Sub(box.Pos)
+	clamped := v.Vec{
+		X: max(-box.Half.X, min(diff.X, box.Half.X)),
+		Y: max(-box.Half.Y, min(diff.Y, box.Half.Y)),
+	}
+	closest := box.Pos.Add(clamped)
+	if !(circle.Pos.DistSq(closest) <= circle.Radius*circle.Radius) {
 		return false
 	}
 
 	if hitInfo == nil {
 		return true
 	}
-	d := circle.Pos.Sub(box.Pos)
-	closest := v.Vec{
-		X: math.Max(-box.Half.X, math.Min(d.X, box.Half.X)),
-		Y: math.Max(-box.Half.Y, math.Min(d.Y, box.Half.Y)),
-	}
-	inside := d.Equals(closest)
+
+	inside := diff.Equals(clamped)
 
 	if !inside {
-		normal := d.Sub(closest)
+		normal := diff.Sub(clamped)
 		distSq := normal.MagSq()
 		dist := math.Sqrt(distSq)
 
@@ -50,15 +54,15 @@ func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 		hitInfo.Delta = hitInfo.Normal.Scale(penetration)
 
 		// Contact point is the closest point on the box (converted to world coordinates)
-		hitInfo.Pos = box.Pos.Add(closest)
+		hitInfo.Pos = box.Pos.Add(clamped)
 
 	} else {
-		absD := d.Abs()
+		absD := diff.Abs()
 		px := box.Half.X - absD.X
 		py := box.Half.Y - absD.Y
 
 		if px < py {
-			sx := math.Copysign(1, d.X)
+			sx := math.Copysign(1, diff.X)
 			pushDistance := px + circle.Radius
 			hitInfo.Delta = v.Vec{X: pushDistance * sx, Y: 0}
 			hitInfo.Normal = v.Vec{X: sx, Y: 0}
@@ -67,7 +71,7 @@ func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 				Y: circle.Pos.Y,
 			}
 		} else {
-			sy := math.Copysign(1, d.Y)
+			sy := math.Copysign(1, diff.Y)
 
 			pushDistance := py + circle.Radius
 

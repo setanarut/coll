@@ -12,7 +12,7 @@ Features
 "Sweep" tests indicate at least 1 of the objects is moving. 
 The number indicates how many objects are moving. e.g., `box-box-sweep2` means we are comparing 2 aabbs, both of which are moving.
 "Overlap" tests don't take movement into account, and this is a static check to see if the 2 entities overlap.
-plural forms imply a collection. e.g., `segments-segment-ovelap` checks one line segment against a set of line segments.
+plural forms imply a collection. e.g., `BoxSegmentSweep1Indexed()` checks one box segment against a set of line segments.
 If there is more than one collision, the closest collision is set in the `hitInfo` argument.
 
 ## Available collision checks
@@ -118,12 +118,12 @@ RayTilemapDDA(pos, dir v.Vec, length float64, tm [][]uint8, cellSize float64, h 
 
 1. Clone this repository
 2. In the terminal, change to the examples directory `cd examples`
-3. Run a folder with `go run ./foldername`. Example: `go run ./aabb_aabb_sweep1 `
+3. Run a folder with `go run ./foldername`. Example: `go run ./box_box_sweep1 `
 
 ## Credits
 
 Most of these collision checks were adapted from existing open source repos:
 
 * [github.com/mreinstein/collision-2d](https://github.com/mreinstein/collision-2d)
-* [youtube.com/watch?v=NbSee-XM7WA](https://youtube.com/watch?v=NbSee-XM7WA) - ray-tilemap (RaycastDDA)
-* [jonathanwhiting.com/tutorial/collision](https://jonathanwhiting.com/tutorial/collision) - aabb-tilemap (TileCollider)
+* [youtube.com/watch?v=NbSee-XM7WA](https://youtube.com/watch?v=NbSee-XM7WA) - ray-tilemap (RayTilemapDDA)
+* [jonathanwhiting.com/tutorial/collision](https://jonathanwhiting.com/tutorial/collision) - box-tilemap (TileCollider)
