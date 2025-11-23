@@ -20,7 +20,7 @@ var (
 	}
 	box      = coll.NewAABB(0, 0, 16, 16)
 	hit      = &coll.HitInfo{}
-	dir      = v.FromAngle(math.Pi / 4).Scale(4)
+	dir      = v.FromAngle(math.Pi / 4).Scale(6)
 	collided bool
 )
 
@@ -54,7 +54,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(s *ebiten.Image) {
 	examples.DrawSegment(s, staticLine, colornames.Gray)
-	examples.StrokeBox(s, box, colornames.Yellow)
+	examples.StrokeBox(s, box, colornames.Green)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
