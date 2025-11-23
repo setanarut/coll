@@ -56,12 +56,12 @@ BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool
 ```
 
-### Box-Segment sweep 1 indexed
+### Box-Segments sweep 1 indexed
 
-![Box-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
+![Box-Segments sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segments-sweep1-indexed.png)
 
 ```go
-BoxSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)  (index int)
+BoxSegmentsSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo)  (index int)
 ```
 
 ### Box-Point overlap
