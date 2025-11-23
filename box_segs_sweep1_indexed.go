@@ -4,7 +4,7 @@ import (
 	"github.com/setanarut/v"
 )
 
-// BoxSegmentSweep1Indexed performs a sweep test of an AABB against a slice of line segments
+// BoxSegmentsSweep1Indexed performs a sweep test of an AABB against a slice of line segments
 // to determine the earliest point of impact along a movement vector.
 //
 // It iterates through the provided segments and finds the collision that occurs
@@ -13,7 +13,7 @@ import (
 //
 // Returns index if a collision occurred, along with the index of the colliding segment.
 // Returns -1 if no collision was detected.
-func BoxSegmentSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (index int) {
+func BoxSegmentsSweep1Indexed(lines []*Segment, aabb *AABB, delta v.Vec, hitInfo *HitInfo) (index int) {
 	colliderIndex := -1
 	var resHitTime float64
 	var tmpHitInfo HitInfo

@@ -48,7 +48,7 @@ func (g *Game) Update() error {
 	factor := max((math.Cos(angle)+1)*0.5, 1e-8)
 	delta = sweepDelta.Scale(factor)
 
-	index = coll.BoxSegmentSweep1Indexed(staticSegments, box, delta, hit)
+	index = coll.BoxSegmentsSweep1Indexed(staticSegments, box, delta, hit)
 
 	return nil
 }
