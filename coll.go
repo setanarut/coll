@@ -32,15 +32,21 @@ func SegmentNormal(pos1, pos2 v.Vec) (normal v.Vec) {
 	return normal.Unit()
 }
 
-// CalculateSlideVelocity computes the total movement: movement until collision plus sliding along the surface normal.
-func CalculateSlideVelocity(vel v.Vec, hitInfo *HitInfo) (slideVel v.Vec) {
-	remainingVel := vel.Scale(1.0 - hitInfo.Time)
-	slideVel = remainingVel.Sub(hitInfo.Normal.Scale(remainingVel.Dot(hitInfo.Normal)))
-	movementToHit := vel.Scale(hitInfo.Time)
-	return movementToHit.Add(slideVel)
+// CollideAndSlide updates the AABB position by applying the calculated slide velocity parallel to the surface.
+func CollideAndSlide(box *AABB, vel v.Vec, hitInfo *HitInfo) {
+	box.Pos = box.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
 }
 
-// ApplySlideVelocity updates the AABB position by applying the calculated slide velocity.
-func ApplySlideVelocity(box *AABB, vel v.Vec, hitInfo *HitInfo) {
-	box.Pos = box.Pos.Add(CalculateSlideVelocity(vel, hitInfo))
+// CalculateSlideVelocity preserves the magnitude of the sliding velocity parallel to the surface, whether flat or inclined.
+func CalculateSlideVelocity(vel v.Vec, hitInfo *HitInfo) (slideVel v.Vec) {
+	movementToHit := vel.Scale(hitInfo.Time)
+	remainingVel := vel.Sub(movementToHit)
+	originalSpeed := remainingVel.Mag()
+	slideDirection := remainingVel.Sub(hitInfo.Normal.Scale(remainingVel.Dot(hitInfo.Normal)))
+	if slideDirection.MagSq() < 1e-6 {
+		return movementToHit
+	}
+	slideDirectionUnit := slideDirection.Unit()
+	scaledSlideDirection := slideDirectionUnit.Scale(originalSpeed)
+	return movementToHit.Add(scaledSlideDirection)
 }

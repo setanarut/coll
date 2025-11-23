@@ -18,7 +18,7 @@ var (
 	box            = coll.NewAABB(250, 100, 16, 16)
 	wall           = coll.NewAABB(250, 250, 16*4, 16)
 	hit            = &coll.HitInfo{}
-	wallVelocity   = v.Vec{X: 3}
+	wallVelocity   = v.Vec{X: 0}
 	boxVelocity    = v.Vec{}
 	slidingEnabled bool
 	collided       bool
@@ -36,7 +36,7 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	boxVelocity = examples.Axis().Scale(3)
+	boxVelocity = examples.Axis().Unit().Scale(3)
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
 		slidingEnabled = !slidingEnabled
@@ -45,7 +45,7 @@ func (g *Game) Update() error {
 	collided = coll.BoxBoxSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
 		if slidingEnabled {
-			coll.ApplySlideVelocity(box, boxVelocity, hit)
+			coll.CollideAndSlide(box, boxVelocity, hit)
 			box.Pos = box.Pos.Add(wallVelocity)
 		} else {
 			box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))

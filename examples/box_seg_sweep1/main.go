@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math"
+	"math/rand"
 
 	"github.com/setanarut/coll"
 	"github.com/setanarut/coll/examples"
@@ -13,19 +14,13 @@ import (
 )
 
 var (
-	angle      float64
 	staticLine = &coll.Segment{
-		A: v.Vec{300, 200},
-		B: v.Vec{230, 250},
+		v.Vec{0, 250},
+		v.Vec{500, 250},
 	}
-
-	box = coll.NewAABB(250, 310, 16, 16)
-
-	sweepDelta = v.Vec{32, -96}
-	delta      v.Vec
-
-	tempBox  = coll.NewAABB(250, 250, 16, 16)
+	box      = coll.NewAABB(0, 0, 16, 16)
 	hit      = &coll.HitInfo{}
+	dir      = v.FromAngle(math.Pi / 4).Scale(4)
 	collided bool
 )
 
@@ -41,34 +36,25 @@ type Game struct{}
 
 func (g *Game) Update() error {
 
-	angle += 0.5 * math.Pi * 0.02
-	factor := max((math.Cos(angle)+1)*0.5, 1e-8)
-	delta = sweepDelta.Scale(factor)
+	collided = coll.BoxSegmentSweep1(staticLine, box, dir, hit)
 
-	collided = coll.BoxSegmentSweep1(staticLine, box, delta, hit)
+	if collided {
+		coll.CollideAndSlide(box, dir, hit)
+	} else {
+		box.Pos = box.Pos.Add(dir)
+	}
+
+	if box.Pos.X > 500 {
+		box.Pos = v.Vec{}
+		staticLine.B.Y = rand.Float64() * 500
+	}
 
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
 	examples.DrawSegment(s, staticLine, colornames.Gray)
-
-	if collided {
-		// Draw a red box at the point where it was trying to move to
-		examples.DrawRay(s, box.Pos, delta.Unit(), delta.Mag(), colornames.Red, true)
-		tempBox.Pos = box.Pos.Add(delta)
-		examples.StrokeBox(s, tempBox, colornames.Red)
-
-		// Draw a yellow box at the point it actually got to
-		tempBox.Pos = box.Pos.Add(delta.Scale(hit.Time))
-		examples.StrokeBox(s, tempBox, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
-
-	} else {
-		tempBox.Pos = box.Pos.Add(delta)
-		examples.StrokeBox(s, tempBox, colornames.Green)
-		examples.DrawRay(s, box.Pos, delta.Unit(), delta.Mag(), colornames.Green, true)
-	}
+	examples.StrokeBox(s, box, colornames.Yellow)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {

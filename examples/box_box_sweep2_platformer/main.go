@@ -18,13 +18,13 @@ import (
 const (
 	ScreenWidth          = 854
 	ScreenHeight         = 480
-	Gravity      float64 = 0.2
-	JumpForce    float64 = -10
+	Gravity      float64 = 0.3
+	JumpForce    float64 = -13
 	PlayerSpeed  float64 = 4
 )
 
 var (
-	box         = coll.NewAABB(100, 100, 16, 35)
+	box         = coll.NewAABB(425, 250, 16, 35)
 	boxVelocity = v.Vec{0, 0}
 	hitInfoBoxB = &coll.HitInfo{}
 )
@@ -46,18 +46,21 @@ func (g *Game) Update() error {
 
 	boxVelocity.X = axis.X * PlayerSpeed // WASD Movement
 	boxVelocity.Y += Gravity
-
 	platform.Pos = platform.Pos.Add(platformVelocity)
-	box.Pos = box.Pos.Add(boxVelocity)
 
 	// Collision check
 	hitInfoBoxB.Reset()
-	if coll.BoxBoxOverlap(platform, box, hitInfoBoxB) {
-		box.Pos = box.Pos.Add(hitInfoBoxB.Delta)
+	if coll.BoxBoxSweep2(platform, box, platformVelocity, boxVelocity, hitInfoBoxB) {
+		coll.CollideAndSlide(box, boxVelocity, hitInfoBoxB)
+		// vel := boxVelocity.Add(boxVelocity)
+		// box.Pos = box.Pos.Add(vel)
 		box.Pos = box.Pos.Add(platformVelocity)
+
 		if hitInfoBoxB.Normal.Y != 0 {
 			boxVelocity.Y = 0 // Reset vertical velocity
 		}
+	} else {
+		box.Pos = box.Pos.Add(boxVelocity)
 	}
 
 	// Ground collision check
