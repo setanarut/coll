@@ -13,85 +13,91 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-// Moving platformer example
-
 const (
 	ScreenWidth          = 854
 	ScreenHeight         = 480
-	Gravity      float64 = 0.3
-	JumpForce    float64 = -13
-	PlayerSpeed  float64 = 4
+	Gravity      float64 = 1.6
+	JumpForce    float64 = -30
+	PlayerSpeed  float64 = 5
+	PlatSpeed    float64 = 1.5
 )
 
 var (
 	box         = coll.NewAABB(425, 250, 16, 35)
-	boxVelocity = v.Vec{0, 0}
+	boxVel      = v.Vec{0, 0}
 	hitInfoBoxB = &coll.HitInfo{}
 )
-
 var (
-	platform         = coll.NewAABB(400, 300, 100, 10)
-	platformVelocity = v.Vec{3, 0}
+	platform = coll.NewAABB(400, 300, 100, 10)
+	platVel  = v.Vec{0, -PlatSpeed}
 )
 
 type Game struct{}
 
 func (g *Game) Update() error {
-	axis := examples.Axis()
-
-	// Jump control
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		boxVelocity.Y = JumpForce
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		switch ebiten.TPS() {
+		case 60:
+			ebiten.SetTPS(4)
+		case 4:
+			ebiten.SetTPS(60)
+		}
 	}
-
-	boxVelocity.X = axis.X * PlayerSpeed // WASD Movement
-	boxVelocity.Y += Gravity
-	platform.Pos = platform.Pos.Add(platformVelocity)
-
-	// Collision check
+	axis := examples.Axis().Unit()
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && boxVel.Y == 0 {
+		boxVel.Y = JumpForce
+	}
+	boxVel.X = axis.X * PlayerSpeed
+	boxVel.Y += Gravity
 	hitInfoBoxB.Reset()
-	if coll.BoxBoxSweep2(platform, box, platformVelocity, boxVelocity, hitInfoBoxB) {
-		coll.CollideAndSlide(box, boxVelocity, hitInfoBoxB)
-		box.Pos = box.Pos.Add(platformVelocity)
-
-		if hitInfoBoxB.Normal.Y != 0 {
-			boxVelocity.Y = 0 // Reset vertical velocity
+	relVel := boxVel.Sub(platVel)
+	if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) {
+		moveRel := slide(relVel, hitInfoBoxB)
+		totalMove := moveRel.Add(platVel)
+		box.Pos = box.Pos.Add(totalMove)
+		if hitInfoBoxB.Normal.Y == -1 {
+			boxVel.Y = 0
+		}
+		if hitInfoBoxB.Normal.Y == 1 {
+			boxVel.Y = 0
 		}
 	} else {
-		box.Pos = box.Pos.Add(boxVelocity)
+		box.Pos = box.Pos.Add(boxVel)
 	}
-
-	// Ground collision check
+	platform.Pos = platform.Pos.Add(platVel)
+	if platform.Top() < 0 || platform.Bottom() > ScreenHeight {
+		platVel.Y *= -1
+	}
 	if box.Bottom() > ScreenHeight {
 		box.SetBottom(ScreenHeight)
-		boxVelocity.Y = 0
+		boxVel.Y = 0
 	}
-
-	// Platform boundary check
-	if platform.Right() > ScreenWidth || platform.Left() < 0.0 {
-		platformVelocity.X *= -1
-	}
-
 	return nil
 }
-
-// Draw renders the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
-	examples.StrokeBox(screen, box, colornames.Green)     // player
-	examples.StrokeBox(screen, platform, colornames.Gray) // platform
-	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space)", 10, 10)
+	examples.StrokeBox(screen, box, colornames.Green)
+	examples.StrokeBox(screen, platform, colornames.Gray)
+	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space", 10, 10)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Player Velocity: %.2f", boxVel.Y), 10, 30)
 	examples.PrintHitInfoAt(screen, hitInfoBoxB, 10, 100)
-
 }
-
-// Layout returns the size of the game window.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ScreenWidth, ScreenHeight
 }
-
 func main() {
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
+	ebiten.SetWindowTitle("Relative Velocity Platformer Example")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}
+}
+func slide(vel v.Vec, hitInfo *coll.HitInfo) (slideVel v.Vec) {
+	movementToHit := vel.Scale(hitInfo.Time)
+	remainingVel := vel.Sub(movementToHit)
+	dot := remainingVel.Dot(hitInfo.Normal)
+	if dot > 0 {
+		return movementToHit.Add(remainingVel)
+	}
+	slideDirection := remainingVel.Sub(hitInfo.Normal.Scale(dot))
+	return movementToHit.Add(slideDirection)
 }

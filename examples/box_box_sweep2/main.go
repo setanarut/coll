@@ -44,13 +44,8 @@ func (g *Game) Update() error {
 	hit.Reset()
 	collided = coll.BoxBoxSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
-		if slidingEnabled {
-			coll.CollideAndSlide(box, boxVelocity, hit)
-			box.Pos = box.Pos.Add(wallVelocity)
-		} else {
-			box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
-			box.Pos = box.Pos.Add(wallVelocity)
-		}
+		box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
+		box.Pos = box.Pos.Add(wallVelocity)
 	} else {
 		box.Pos = box.Pos.Add(boxVelocity)
 	}

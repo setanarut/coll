@@ -39,9 +39,10 @@ func (g *Game) Update() error {
 	collided = coll.BoxSegmentSweep1(staticLine, box, dir, hit)
 
 	if collided {
-		coll.CollideAndSlide(box, dir, hit)
+		box.Pos = box.Pos.Add(slide(dir, hit))
 	} else {
 		box.Pos = box.Pos.Add(dir)
+
 	}
 
 	if box.Pos.X > 500 {
@@ -59,4 +60,17 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 func (g *Game) Layout(w, h int) (int, int) {
 	return 500, 500
+}
+
+func slide(vel v.Vec, hitInfo *coll.HitInfo) (slideVel v.Vec) {
+	movementToHit := vel.Scale(hitInfo.Time)
+	remainingVel := vel.Sub(movementToHit)
+	originalSpeed := remainingVel.Mag()
+	slideDirection := remainingVel.Sub(hitInfo.Normal.Scale(remainingVel.Dot(hitInfo.Normal)))
+	if slideDirection.MagSq() < 1e-6 {
+		return movementToHit
+	}
+	slideDirectionUnit := slideDirection.Unit()
+	scaledSlideDirection := slideDirectionUnit.Scale(originalSpeed)
+	return movementToHit.Add(scaledSlideDirection)
 }
