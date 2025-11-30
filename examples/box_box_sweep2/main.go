@@ -18,7 +18,7 @@ var (
 	box            = coll.NewAABB(250, 100, 16, 16)
 	wall           = coll.NewAABB(250, 250, 16*4, 16)
 	hit            = &coll.HitInfo{}
-	wallVelocity   = v.Vec{X: 0}
+	wallVelocity   = v.Vec{X: 5}
 	boxVelocity    = v.Vec{}
 	slidingEnabled bool
 	collided       bool

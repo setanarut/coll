@@ -6,11 +6,20 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/colorm"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/setanarut/coll"
 	"github.com/setanarut/v"
 )
+
+var im = ebiten.NewImage(1, 1)
+var dio = &colorm.DrawImageOptions{}
+var clrm = colorm.ColorM{}
+
+func init() {
+	im.Fill(color.White)
+}
 
 const WindowWidth, WindowHeight int = 500, 500
 
@@ -30,6 +39,28 @@ func FillCircleAt(dst *ebiten.Image, origin v.Vec, radius float64, clr color.Col
 
 func StrokeBox(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.StrokeRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), 1, clr, false)
+}
+func FillOBB(screen *ebiten.Image, obox *coll.OBB, c color.Color) {
+	clrm.Reset()
+	clrm.ScaleWithColor(c)
+	dio.GeoM.Reset()
+	dio.GeoM.Scale(obox.Half.X*2, obox.Half.Y*2)
+	dio.GeoM.Translate(-obox.Half.X, -obox.Half.Y)
+	dio.GeoM.Rotate(obox.Angle)
+	dio.GeoM.Translate(obox.Pos.X, obox.Pos.Y)
+	colorm.DrawImage(screen, im, clrm, dio)
+}
+func StrokeOBB(screen *ebiten.Image, box *coll.OBB, clr color.Color) {
+	axisX := box.AxisX().Scale(box.Half.X)
+	axisY := box.AxisY().Scale(box.Half.Y)
+	a := box.Pos.Sub(axisX).Sub(axisY) // Sol-alt
+	b := box.Pos.Add(axisX).Sub(axisY) // Sağ-alt
+	c := box.Pos.Add(axisX).Add(axisY) // Sağ-üst
+	d := box.Pos.Sub(axisX).Add(axisY) // Sol-üst
+	DrawLine(screen, a, b, clr)
+	DrawLine(screen, b, c, clr)
+	DrawLine(screen, c, d, clr)
+	DrawLine(screen, d, a, clr)
 }
 
 func StrokeBoxAt(dst *ebiten.Image, pos, half v.Vec, clr color.Color) {
