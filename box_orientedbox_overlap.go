@@ -8,22 +8,31 @@ import (
 // For moving objects, use BoxOrientedBoxSweep2 to prevent tunneling.
 func BoxOrientedBoxOverlap(a *AABB, b *OBB) bool {
 	T := b.Pos.Sub(a.Pos)
-	Ax := b.AxisX()
-	Ay := b.AxisY()
-	projBOnAx := math.Abs(Ax.X)*b.Half.X + math.Abs(Ay.X)*b.Half.Y
+
+	// Precompute axes and their absolute values
+	bx, by := b.AxisX(), b.AxisY()
+	absBxX, absBxY := math.Abs(bx.X), math.Abs(bx.Y)
+	absByX, absByY := math.Abs(by.X), math.Abs(by.Y)
+
+	// Check AABB axes
+	projBOnAx := absBxX*b.Half.X + absByX*b.Half.Y
 	if math.Abs(T.X) > a.Half.X+projBOnAx {
 		return false
 	}
-	projBOnAy := math.Abs(Ax.Y)*b.Half.X + math.Abs(Ay.Y)*b.Half.Y
+
+	projBOnAy := absBxY*b.Half.X + absByY*b.Half.Y
 	if math.Abs(T.Y) > a.Half.Y+projBOnAy {
 		return false
 	}
-	distOnObbX := math.Abs(T.Dot(Ax))
-	projAOnObbX := math.Abs(Ax.X)*a.Half.X + math.Abs(Ax.Y)*a.Half.Y
+
+	// Check OBB axes
+	distOnObbX := math.Abs(T.Dot(bx))
+	projAOnObbX := absBxX*a.Half.X + absBxY*a.Half.Y
 	if distOnObbX > b.Half.X+projAOnObbX {
 		return false
 	}
-	distOnObbY := math.Abs(T.Dot(Ay))
-	projAOnObbY := math.Abs(Ay.X)*a.Half.X + math.Abs(Ay.Y)*a.Half.Y
+
+	distOnObbY := math.Abs(T.Dot(by))
+	projAOnObbY := absByX*a.Half.X + absByY*a.Half.Y
 	return distOnObbY <= b.Half.Y+projAOnObbY
 }
