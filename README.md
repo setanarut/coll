@@ -48,6 +48,18 @@ BoxBoxSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool
 BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 ```
 
+### Box-OrientedBox overlap
+
+```go
+BoxOrientedBoxOverlap(a *AABB, b *OBB) bool
+```
+
+### Box-OrientedBox sweep 2
+
+```go
+BoxOrientedBoxSweep2(a *AABB, b *OBB, va v.Vec, vb v.Vec) bool
+```
+
 ### Box-Segment sweep 1
 
 ![Box-Segment sweep 1](https://raw.githubusercontent.com/mreinstein/collision-2d/refs/heads/main/docs/aabb-segment-sweep1.png)
