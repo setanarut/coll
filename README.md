@@ -50,6 +50,8 @@ BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 
 ### Box-OrientedBox overlap
 
+![abb-obb-overlap](https://github.com/user-attachments/assets/972ae63f-6ed0-4d10-a893-ab80f0f59f00)
+
 ```go
 BoxOrientedBoxOverlap(a *AABB, b *OBB) bool
 ```
