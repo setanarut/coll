@@ -9,59 +9,57 @@ import (
 // BoxOrientedBoxSweep2 tests if a moving AABB and moving OBB intersect during their motion.
 // Uses swept volume testing to prevent tunneling for fast-moving objects.
 func BoxOrientedBoxSweep2(a *AABB, b *OBB, va v.Vec, vb v.Vec) bool {
-	V_rel := vb.Sub(va)
-	T := b.Pos.Sub(a.Pos)
-	Ax := b.AxisX()
-	Ay := b.AxisY()
-	absT := T.Abs()
-	absAx := Ax.Abs()
-	absAy := Ay.Abs()
-	absVRelOnAx := math.Abs(V_rel.Dot(Ax))
-	absVRelOnAy := math.Abs(V_rel.Dot(Ay))
-	projBOnAx := (absAx.X * b.Half.X) + (absAy.X * b.Half.Y)
-	projVRelOnGlobalX := V_rel.AbsX()
-	distX := T.X
-	if (distX > 0 && V_rel.X > 0) || (distX < 0 && V_rel.X < 0) {
-		if absT.X > a.Half.X+projBOnAx {
-			return false
-		}
-	} else {
-		if absT.X > a.Half.X+projBOnAx+projVRelOnGlobalX {
-			return false
-		}
+	relVx := vb.X - va.X
+	relVy := vb.Y - va.Y
+	tx := b.Pos.X - a.Pos.X
+	ty := b.Pos.Y - a.Pos.Y
+
+	bAx := b.AxisX()
+	bAy := b.AxisY()
+	absAxX := math.Abs(bAx.X)
+	absAxY := math.Abs(bAx.Y)
+	absAyX := math.Abs(bAy.X)
+	absAyY := math.Abs(bAy.Y)
+
+	projB_on_GlobalX := (absAxX * b.Half.X) + (absAyX * b.Half.Y)
+	limitX := a.Half.X + projB_on_GlobalX
+	if (tx > 0 && relVx < 0) || (tx < 0 && relVx > 0) {
+		limitX += math.Abs(relVx)
 	}
-	projBOnAy := (absAx.Y * b.Half.X) + (absAy.Y * b.Half.Y)
-	projVRelOnGlobalY := V_rel.AbsY()
-	distY := T.Y
-	if (distY > 0 && V_rel.Y > 0) || (distY < 0 && V_rel.Y < 0) {
-		if absT.Y > a.Half.Y+projBOnAy {
-			return false
-		}
-	} else {
-		if absT.Y > a.Half.Y+projBOnAy+projVRelOnGlobalY {
-			return false
-		}
+	if math.Abs(tx) > limitX {
+		return false
 	}
-	distOnObbX := math.Abs(T.Dot(Ax))
-	projAOnObbX := (absAx.X * a.Half.X) + (absAx.Y * a.Half.Y)
-	dotTAx := T.Dot(Ax)
-	dotVAx := V_rel.Dot(Ax)
-	if (dotTAx > 0 && dotVAx > 0) || (dotTAx < 0 && dotVAx < 0) {
-		if distOnObbX > b.Half.X+projAOnObbX {
-			return false
-		}
-	} else {
-		if distOnObbX > b.Half.X+projAOnObbX+absVRelOnAx {
-			return false
-		}
+
+	projB_on_GlobalY := (absAxY * b.Half.X) + (absAyY * b.Half.Y)
+	limitY := a.Half.Y + projB_on_GlobalY
+	if (ty > 0 && relVy < 0) || (ty < 0 && relVy > 0) {
+		limitY += math.Abs(relVy)
 	}
-	distOnObbY := math.Abs(T.Dot(Ay))
-	projAOnObbY := (absAy.X * a.Half.X) + (absAy.Y * a.Half.Y)
-	dotTAy := T.Dot(Ay)
-	dotVAy := V_rel.Dot(Ay)
-	if (dotTAy > 0 && dotVAy > 0) || (dotTAy < 0 && dotVAy < 0) {
-		return distOnObbY <= b.Half.Y+projAOnObbY
-	} else {
-		return distOnObbY <= b.Half.Y+projAOnObbY+absVRelOnAy
+	if math.Abs(ty) > limitY {
+		return false
 	}
+
+	dotT_Ax := (tx * bAx.X) + (ty * bAx.Y)
+	projA_on_ObbX := (absAxX * a.Half.X) + (absAxY * a.Half.Y)
+	dotV_Ax := (relVx * bAx.X) + (relVy * bAx.Y)
+	limitObbX := b.Half.X + projA_on_ObbX
+	if (dotT_Ax > 0 && dotV_Ax < 0) || (dotT_Ax < 0 && dotV_Ax > 0) {
+		limitObbX += math.Abs(dotV_Ax)
+	}
+	if math.Abs(dotT_Ax) > limitObbX {
+		return false
+	}
+
+	dotT_Ay := (tx * bAy.X) + (ty * bAy.Y)
+	projA_on_ObbY := (absAyX * a.Half.X) + (absAyY * a.Half.Y)
+	dotV_Ay := (relVx * bAy.X) + (relVy * bAy.Y)
+	limitObbY := b.Half.Y + projA_on_ObbY
+	if (dotT_Ay > 0 && dotV_Ay < 0) || (dotT_Ay < 0 && dotV_Ay > 0) {
+		limitObbY += math.Abs(dotV_Ay)
+	}
+	if math.Abs(dotT_Ay) > limitObbY {
+		return false
+	}
+
+	return true
 }
