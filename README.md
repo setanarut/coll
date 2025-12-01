@@ -48,6 +48,12 @@ BoxBoxSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool
 BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool
 ```
 
+### Circle-Circle sweep 2
+
+```go
+CircleCircleSweep2(c1, c2 *Circle, c1Vel, c2Vel v.Vec) bool
+```
+
 ### Box-OrientedBox overlap
 
 ![abb-obb-overlap](https://github.com/user-attachments/assets/972ae63f-6ed0-4d10-a893-ab80f0f59f00)
