@@ -18,7 +18,7 @@ import (
 //   - Pos: an approximate contact position on the collision side
 //
 // This method can behave poorly for moving objects. For continuous motion,
-// AABBCircleSweep2 should be used instead.
+// BoxCircleSweep2() should be used instead.
 //
 // If you only need to know whether a collision occurred, pass nil for hitInfo
 // to skip generating collision details.
