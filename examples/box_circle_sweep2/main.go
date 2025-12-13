@@ -19,8 +19,6 @@ var (
 	circleVelocity = v.Vec{-4, 0}
 )
 
-// var hitInfo = &coll.HitInfo{}
-
 var sweep bool
 
 func main() {
@@ -58,7 +56,6 @@ func (g *Game) Draw(s *ebiten.Image) {
 	examples.StrokeBox(s, box, colornames.Gray)
 	if sweep {
 		examples.FillCircle(s, circle, colornames.Yellow)
-		// examples.DrawHitNormal(s, hitInfo, colornames.Yellow, true)
 	} else {
 		examples.StrokeCircle(s, circle, colornames.Gray)
 	}

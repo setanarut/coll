@@ -10,18 +10,16 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"golang.org/x/image/colornames"
 )
 
 var (
-	box            = coll.NewAABB(250, 100, 16, 16)
-	wall           = coll.NewAABB(250, 250, 16*4, 16)
-	hit            = &coll.HitInfo{}
-	wallVelocity   = v.Vec{X: 5}
-	boxVelocity    = v.Vec{}
-	slidingEnabled bool
-	collided       bool
+	box          = coll.NewAABB(250, 100, 16, 16)
+	wall         = coll.NewAABB(250, 250, 16*4, 16)
+	hit          = &coll.HitInfo{}
+	wallVelocity = v.Vec{X: 5}
+	boxVelocity  = v.Vec{}
+	collided     bool
 )
 
 func main() {
@@ -37,10 +35,6 @@ type Game struct {
 
 func (g *Game) Update() error {
 	boxVelocity = examples.Axis().Unit().Scale(3)
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyTab) {
-		slidingEnabled = !slidingEnabled
-	}
 	hit.Reset()
 	collided = coll.BoxBoxSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
@@ -72,8 +66,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	ebitenutil.DebugPrintAt(
 		s,
 		fmt.Sprintf(
-			"WASD = Move\nTab = Enabled/Disable Sliding (%v)\naVel: %v\nBoxPos: %v",
-			slidingEnabled,
+			"WASD = Move\naVel: %v\nBoxPos: %v",
 			boxVelocity,
 			box.Pos,
 		),
