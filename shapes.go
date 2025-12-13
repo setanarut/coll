@@ -1,8 +1,6 @@
 package coll
 
 import (
-	"math"
-
 	"github.com/setanarut/v"
 )
 
@@ -11,16 +9,6 @@ type OBB struct {
 	Pos   v.Vec   // Center position of the box.
 	Half  v.Vec   // Half-extents (half dimensions) from the center.
 	Angle float64 // Rotation angle from center (Pos). Unit in radians. (Clockwise)
-}
-
-// AxisX returns the OBB's local X-axis (unit vector).
-func (b OBB) AxisX() v.Vec {
-	return v.Vec{X: math.Cos(b.Angle), Y: math.Sin(b.Angle)}
-}
-
-// AxisY returns the OBB's local Y-axis (unit vector).
-func (b OBB) AxisY() v.Vec {
-	return v.Vec{X: -math.Sin(b.Angle), Y: math.Cos(b.Angle)}
 }
 
 // AABB represents an Axis-Aligned Bounding Box.

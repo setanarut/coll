@@ -2,37 +2,40 @@ package coll
 
 import (
 	"math"
+
+	"github.com/setanarut/v"
 )
 
 // BoxOrientedBoxOverlap tests if an AABB and OBB are currently intersecting.
 // For moving objects, use BoxOrientedBoxSweep2 to prevent tunneling.
 func BoxOrientedBoxOverlap(a *AABB, b *OBB) bool {
-	T := b.Pos.Sub(a.Pos)
+	d := b.Pos.Sub(a.Pos)
 
 	// Precompute axes and their absolute values
-	bx, by := b.AxisX(), b.AxisY()
-	absBxX, absBxY := math.Abs(bx.X), math.Abs(bx.Y)
-	absByX, absByY := math.Abs(by.X), math.Abs(by.Y)
+	bAxisX := v.FromAngle(b.Angle)
+	bAxisY := v.Vec{X: -bAxisX.Y, Y: bAxisX.X}
+	bAxisXAbs := bAxisX.Abs()
+	bAxisYAbs := bAxisY.Abs()
 
 	// Check AABB axes
-	projBOnAx := absBxX*b.Half.X + absByX*b.Half.Y
-	if math.Abs(T.X) > a.Half.X+projBOnAx {
+	projBOnAx := bAxisXAbs.X*b.Half.X + bAxisYAbs.X*b.Half.Y
+	if math.Abs(d.X) > a.Half.X+projBOnAx {
 		return false
 	}
 
-	projBOnAy := absBxY*b.Half.X + absByY*b.Half.Y
-	if math.Abs(T.Y) > a.Half.Y+projBOnAy {
+	projBOnAy := bAxisXAbs.Y*b.Half.X + bAxisYAbs.Y*b.Half.Y
+	if math.Abs(d.Y) > a.Half.Y+projBOnAy {
 		return false
 	}
 
 	// Check OBB axes
-	distOnObbX := math.Abs(T.Dot(bx))
-	projAOnObbX := absBxX*a.Half.X + absBxY*a.Half.Y
+	distOnObbX := math.Abs(d.Dot(bAxisX))
+	projAOnObbX := bAxisXAbs.X*a.Half.X + bAxisXAbs.Y*a.Half.Y
 	if distOnObbX > b.Half.X+projAOnObbX {
 		return false
 	}
 
-	distOnObbY := math.Abs(T.Dot(by))
-	projAOnObbY := absByX*a.Half.X + absByY*a.Half.Y
+	distOnObbY := math.Abs(d.Dot(bAxisY))
+	projAOnObbY := bAxisYAbs.X*a.Half.X + bAxisYAbs.Y*a.Half.Y
 	return distOnObbY <= b.Half.Y+projAOnObbY
 }

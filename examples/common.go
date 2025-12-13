@@ -51,12 +51,18 @@ func FillOBB(screen *ebiten.Image, obox *coll.OBB, c color.Color) {
 	colorm.DrawImage(screen, im, clrm, dio)
 }
 func StrokeOBB(screen *ebiten.Image, box *coll.OBB, clr color.Color) {
-	axisX := box.AxisX().Scale(box.Half.X)
-	axisY := box.AxisY().Scale(box.Half.Y)
-	a := box.Pos.Sub(axisX).Sub(axisY) // Sol-alt
-	b := box.Pos.Add(axisX).Sub(axisY) // Sağ-alt
-	c := box.Pos.Add(axisX).Add(axisY) // Sağ-üst
-	d := box.Pos.Sub(axisX).Add(axisY) // Sol-üst
+
+	bAx := v.FromAngle(box.Angle)
+	bAy := v.Vec{X: -bAx.Y, Y: bAx.X}
+
+	axisX := bAx.Scale(box.Half.X)
+	axisY := bAy.Scale(box.Half.Y)
+
+	a := box.Pos.Sub(axisX).Sub(axisY) // left-bottom
+	b := box.Pos.Add(axisX).Sub(axisY) // right-bottom
+	c := box.Pos.Add(axisX).Add(axisY) // right-top
+	d := box.Pos.Sub(axisX).Add(axisY) // left-top
+
 	DrawLine(screen, a, b, clr)
 	DrawLine(screen, b, c, clr)
 	DrawLine(screen, c, d, clr)
