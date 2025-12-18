@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -28,8 +29,11 @@ var (
 	hitInfoBoxB = &coll.HitInfo{}
 )
 var (
-	platform = coll.NewAABB(400, 300, 100, 10)
-	platVel  = v.Vec{0, -PlatSpeed}
+	platform       = coll.NewAABB(400, 300, 100, 10)
+	platVel        = v.Vec{0, 0}
+	platformCenter = v.Vec{X: ScreenWidth / 2, Y: 300}
+	platformRadius = 150.0
+	platformAngle  = 0.0
 )
 
 type Game struct{}
@@ -43,35 +47,63 @@ func (g *Game) Update() error {
 			ebiten.SetTPS(60)
 		}
 	}
-	axis := examples.Axis().Unit()
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && boxVel.Y == 0 {
-		boxVel.Y = JumpForce
-	}
-	boxVel.X = axis.X * PlayerSpeed
+
+	// 1. Calculate platform movement for this frame
+	platformAngle += 0.02
+	newPlatCenterX := platformCenter.X + math.Cos(platformAngle)*platformRadius
+	newPlatCenterY := platformCenter.Y + math.Sin(platformAngle)*platformRadius
+	newPlatPos := v.Vec{X: newPlatCenterX - platform.Half.X, Y: newPlatCenterY - platform.Half.Y}
+	platVel = newPlatPos.Sub(platform.Pos)
+
+	// 2. Apply gravity and check for ground collision
 	boxVel.Y += Gravity
+
 	hitInfoBoxB.Reset()
 	relVel := boxVel.Sub(platVel)
+
+	onGround := false
 	if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) {
+		if hitInfoBoxB.Normal.Y == -1 {
+			onGround = true
+			// When on ground, vertical velocity should be based on the platform's
+			boxVel = platVel
+		}
+
 		moveRel := slide(relVel, hitInfoBoxB)
 		totalMove := moveRel.Add(platVel)
 		box.Pos = box.Pos.Add(totalMove)
-		if hitInfoBoxB.Normal.Y == -1 {
-			boxVel.Y = 0
-		}
-		if hitInfoBoxB.Normal.Y == 1 {
+
+		if hitInfoBoxB.Normal.Y == 1 { // Hit bottom of platform
 			boxVel.Y = 0
 		}
 	} else {
+		// In air
 		box.Pos = box.Pos.Add(boxVel)
 	}
-	platform.Pos = platform.Pos.Add(platVel)
-	if platform.Top() < 0 || platform.Bottom() > ScreenHeight {
-		platVel.Y *= -1
+
+	// 3. Handle player input
+	axis := examples.Axis().Unit()
+	if onGround {
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			// Jump relative to the platform's current velocity
+			boxVel.Y += JumpForce
+		}
+		// Add player's input speed to the platform's velocity
+		boxVel.X = platVel.X + axis.X*PlayerSpeed
+	} else {
+		// Air control
+		boxVel.X = axis.X * PlayerSpeed
 	}
+
+	// 4. Update platform position
+	platform.Pos = platform.Pos.Add(platVel)
+
+	// 5. Final ground check (floor)
 	if box.Bottom() > ScreenHeight {
 		box.SetBottom(ScreenHeight)
 		boxVel.Y = 0
 	}
+
 	return nil
 }
 func (g *Game) Draw(screen *ebiten.Image) {

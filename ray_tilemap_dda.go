@@ -16,6 +16,8 @@ import (
 //   - dir: Direction unit vector of the ray (should be normalized)
 //   - length: Maximum distance the ray can travel
 //   - tileMap: 2D grid of cells where any non-zero value represents a wall/obstacle
+//   - cellSize: Size of each tile in the grid
+//   - hit: Optional pointer to HitInfo struct (can be nil)
 //
 // Returns:
 //   - bool: True if a collision occurred
@@ -48,38 +50,40 @@ func RayTilemapDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize f
 		// Sınırları kontrol et
 		if cell.X >= 0 && cell.X < len(tileMap[0]) && cell.Y >= 0 && cell.Y < len(tileMap) {
 			if tileMap[cell.Y][cell.X] != 0 {
-				// Çarpışma noktasını kaydet
-				hit.Pos = current
-				hit.Normal = v.Vec{}
-				hit.Delta = v.Vec{}
-				hit.Time = 0
+				// hit nil değilse bilgileri doldur
+				if hit != nil {
+					// Çarpışma noktasını kaydet
+					hit.Pos = current
 
-				// Mesafe ve zaman (0..1) hesapla
-				distance := current.Sub(pos).Mag()
-				if length > 0 {
-					hit.Time = distance / length
-				}
+					// Mesafe ve zaman (0..1) hesapla
+					distance := current.Sub(pos).Mag()
+					if length > 0 {
+						hit.Time = distance / length
+					} else {
+						hit.Time = 0
+					}
 
-				// Kalan hareket vektörü (başlangıçtan hedefe kadar - gittiğimiz mesafe)
-				remaining := length - distance
-				if remaining < 0 {
-					remaining = 0
-				}
-				hit.Delta = dir.Scale(remaining)
+					// Kalan hareket vektörü (başlangıçtan hedefe kadar - gittiğimiz mesafe)
+					remaining := length - distance
+					if remaining < 0 {
+						remaining = 0
+					}
+					hit.Delta = dir.Scale(remaining)
 
-				// Yüzey normalini hesapla
-				cellCenterX := float64(cell.X)*cellSize + cellSize/2
-				cellCenterY := float64(cell.Y)*cellSize + cellSize/2
+					// Yüzey normalini hesapla
+					cellCenterX := float64(cell.X)*cellSize + cellSize/2
+					cellCenterY := float64(cell.Y)*cellSize + cellSize/2
 
-				diffX := math.Abs(current.X - cellCenterX)
-				diffY := math.Abs(current.Y - cellCenterY)
+					diffX := math.Abs(current.X - cellCenterX)
+					diffY := math.Abs(current.Y - cellCenterY)
 
-				if diffX > diffY {
-					// X yüzeyine çarpış
-					hit.Normal = v.Vec{X: -math.Copysign(1, dir.X), Y: 0}
-				} else {
-					// Y yüzeyine çarpış
-					hit.Normal = v.Vec{X: 0, Y: -math.Copysign(1, dir.Y)}
+					if diffX > diffY {
+						// X yüzeyine çarpış
+						hit.Normal = v.Vec{X: -math.Copysign(1, dir.X), Y: 0}
+					} else {
+						// Y yüzeyine çarpış
+						hit.Normal = v.Vec{X: 0, Y: -math.Copysign(1, dir.Y)}
+					}
 				}
 
 				// Return true and the cell coordinate
@@ -91,14 +95,16 @@ func RayTilemapDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize f
 		current = current.Add(inc)
 	}
 
-	// Çarpışma bulunamadı
-	hit.Pos = end
-	hit.Normal = v.Vec{}
-	hit.Delta = v.Vec{}
-	if length > 0 {
-		hit.Time = 1.0
-	} else {
-		hit.Time = 0.0
+	// Çarpışma bulunamadı - hit nil değilse son durumu kaydet
+	if hit != nil {
+		hit.Pos = end
+		hit.Normal = v.Vec{}
+		hit.Delta = v.Vec{}
+		if length > 0 {
+			hit.Time = 1.0
+		} else {
+			hit.Time = 0.0
+		}
 	}
 
 	// Return false and an empty point

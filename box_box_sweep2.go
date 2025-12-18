@@ -16,7 +16,7 @@ import "github.com/setanarut/v"
 func BoxBoxSweep2(boxA, boxB *AABB, boxAVel, boxBVel v.Vec, hitInfo *HitInfo) bool {
 	delta := boxBVel.Sub(boxAVel)
 	isCollide := BoxBoxSweep1(boxA, boxB, delta, hitInfo)
-	if isCollide {
+	if isCollide && hitInfo != nil {
 		hitInfo.Pos = hitInfo.Pos.Add(boxAVel.Scale(hitInfo.Time))
 		if hitInfo.Normal.X != 0 {
 			hitInfo.Pos.X = boxB.Pos.X + (boxBVel.X * hitInfo.Time) - (hitInfo.Normal.X * boxB.Half.X)

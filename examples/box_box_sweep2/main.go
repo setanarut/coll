@@ -38,8 +38,16 @@ func (g *Game) Update() error {
 	hit.Reset()
 	collided = coll.BoxBoxSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
+
 		box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
 		box.Pos = box.Pos.Add(wallVelocity)
+
+		if hit.Normal.Y == -1 {
+			boxVelocity.Y = 0
+		}
+		if hit.Normal.X != 0 {
+			boxVelocity.X = 0
+		}
 	} else {
 		box.Pos = box.Pos.Add(boxVelocity)
 	}
@@ -52,6 +60,7 @@ func (g *Game) Update() error {
 	}
 
 	wall.Pos = wall.Pos.Add(wallVelocity)
+	// box.Pos = box.Pos.Add(boxVelocity)
 	return nil
 }
 

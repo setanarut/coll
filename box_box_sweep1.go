@@ -18,7 +18,7 @@ func BoxBoxSweep1(staticBoxA, boxB *AABB, boxBVel v.Vec, hitInfo *HitInfo) bool 
 		return BoxBoxOverlap(staticBoxA, boxB, hitInfo)
 	}
 	result := BoxSegmentOverlap(staticBoxA, boxB.Pos, boxBVel, boxB.Half, hitInfo)
-	if result {
+	if result && hitInfo != nil {
 		hitInfo.Time = max(0, min(1, hitInfo.Time-Epsilon))
 		direction := boxBVel.Unit()
 		hitInfo.Pos.X = max(staticBoxA.Left(), min(staticBoxA.Right(), hitInfo.Pos.X+direction.X*boxB.Half.X))
