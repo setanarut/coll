@@ -55,60 +55,75 @@ func (g *Game) Update() error {
 	newPlatPos := v.Vec{X: newPlatCenterX - platform.Half.X, Y: newPlatCenterY - platform.Half.Y}
 	platVel = newPlatPos.Sub(platform.Pos)
 
-	// 2. Apply gravity and check for ground collision
+	// 2. Apply gravity
 	boxVel.Y += Gravity
 
+	// 3. Handle player input and collision
+	axis := examples.Axis().Unit()
+	playerInputVelX := axis.X * PlayerSpeed
+
 	hitInfoBoxB.Reset()
-	relVel := boxVel.Sub(platVel)
-
 	onGround := false
-	if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) {
-		if hitInfoBoxB.Normal.Y == -1 {
-			onGround = true
-			// When on ground, vertical velocity should be based on the platform's
-			boxVel = platVel
-		}
-
-		moveRel := slide(relVel, hitInfoBoxB)
-		totalMove := moveRel.Add(platVel)
-		box.Pos = box.Pos.Add(totalMove)
-
-		if hitInfoBoxB.Normal.Y == 1 { // Hit bottom of platform
-			boxVel.Y = 0
-		}
-	} else {
-		// In air
-		box.Pos = box.Pos.Add(boxVel)
+	if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) && hitInfoBoxB.Normal.Y == -1 {
+		onGround = true
 	}
 
-	// 3. Handle player input
-	axis := examples.Axis().Unit()
 	if onGround {
+		// --- On-Ground Logic ---
+		// Move box with platform first to ensure it sticks
+		box.Pos = box.Pos.Add(platVel)
+		// Then snap its bottom to the platform's new top position to prevent jitter/sinking
+		box.SetBottom(platform.Top() + platVel.Y)
+
+		// Add player's horizontal movement
+		box.Pos.X += playerInputVelX
+
+		// Update velocity for the NEXT frame
+		boxVel.X = platVel.X + playerInputVelX
+		boxVel.Y = platVel.Y // Y velocity matches the platform's
+
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			// Jump relative to the platform's current velocity
 			boxVel.Y += JumpForce
 		}
-		// Add player's input speed to the platform's velocity
-		boxVel.X = platVel.X + axis.X*PlayerSpeed
 	} else {
-		// Air control
-		boxVel.X = axis.X * PlayerSpeed
+		// --- In-Air / Other Collision Logic ---
+		boxVel.X = playerInputVelX // Apply air control
+
+		relVel := boxVel.Sub(platVel)
+		hitInfoBoxB.Reset() // Reset for a new check
+		if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) {
+			// A collision will happen (e.g., hitting side/bottom of the platform)
+			moveRel := slide(relVel, hitInfoBoxB)
+			totalMove := moveRel.Add(platVel)
+			box.Pos = box.Pos.Add(totalMove)
+
+			if hitInfoBoxB.Normal.Y == 1 { // Hit bottom of platform
+				boxVel.Y = 0
+			}
+		} else {
+			// No collision with platform, move freely
+			box.Pos = box.Pos.Add(boxVel)
+		}
 	}
 
 	// 4. Update platform position
 	platform.Pos = platform.Pos.Add(platVel)
 
 	// 5. Final ground check (floor)
-	if box.Bottom() > ScreenHeight {
+	if box.Bottom() >= ScreenHeight {
 		box.SetBottom(ScreenHeight)
 		boxVel.Y = 0
+		onGround = true
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			boxVel.Y += JumpForce
+		}
 	}
 
 	return nil
 }
 func (g *Game) Draw(screen *ebiten.Image) {
-	examples.StrokeBox(screen, box, colornames.Green)
-	examples.StrokeBox(screen, platform, colornames.Gray)
+	examples.FillBox(screen, box, colornames.Green)
+	examples.FillBox(screen, platform, colornames.Gray)
 	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space", 10, 10)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Player Velocity: %.2f", boxVel.Y), 10, 30)
 	examples.PrintHitInfoAt(screen, hitInfoBoxB, 10, 100)
@@ -123,6 +138,7 @@ func main() {
 		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}
 }
+
 func slide(vel v.Vec, hitInfo *coll.HitInfo) (slideVel v.Vec) {
 	movementToHit := vel.Scale(hitInfo.Time)
 	remainingVel := vel.Sub(movementToHit)
