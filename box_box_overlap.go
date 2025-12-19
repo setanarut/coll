@@ -6,26 +6,21 @@ import (
 	"github.com/setanarut/v"
 )
 
-// BoxBoxOverlap checks whether boxA and boxB overlap.
-// Any collision information written to hitInfo always describes how to move boxA out of boxB.
+// BoxBoxOverlap checks whether a and b overlap.
+// Hit describes how to move a out of b.
 //
-// It uses a separating-axis test: if the boxes do not overlap on either X or Y,
-// there is no collision and the function returns false.
-//
-// If hitInfo is not nil, the function fills it with:
-//   - Delta: the minimum vector needed to push boxA out of boxB
+// If h is not nil, the function fills it with:
+//   - Time: the penetration depth (overlap distance), where pos.Add(normal.Scale(time))
+//     gives the pushback distance needed to resolve the overlap
 //   - Normal: the direction in which boxA is pushed
-//   - Pos: an approximate contact position on the collision side
 //
-// This method can behave poorly for moving objects. For continuous motion,
-// sweepAABB should be used instead.
+// This method can behave poorly for moving objects.
 //
-// If you only need to know whether a collision occurred, pass nil for hitInfo
-// to skip generating collision details.
-func BoxBoxOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
-	d := boxB.Pos.Sub(boxA.Pos)
+// For continuous motion, BoxBoxSweep1() of BoxBoxSweep2() should be used instead.
+func BoxBoxOverlap(a, b *AABB, h *Hit) bool {
+	d := b.Pos.Sub(a.Pos)
 	absD := d.Abs()
-	hSum := boxA.Half.Add(boxB.Half)
+	hSum := a.Half.Add(b.Half)
 
 	px := hSum.X - absD.X
 
@@ -39,31 +34,19 @@ func BoxBoxOverlap(boxA, boxB *AABB, hitInfo *HitInfo) bool {
 		return false
 	}
 
-	if hitInfo == nil {
+	if h == nil {
 		return true
 	}
 
 	if px < py {
 		sx := math.Copysign(1, d.X)
-
-		hitInfo.Delta = v.Vec{X: px * sx, Y: 0}
-		hitInfo.Normal = v.Vec{X: sx, Y: 0}
-
-		hitInfo.Pos = v.Vec{
-			X: boxA.Pos.X + boxA.Half.X*sx,
-			Y: boxB.Pos.Y,
-		}
-
+		h.Normal = v.Vec{X: sx, Y: 0}
+		h.Time = px
 	} else {
 		sy := math.Copysign(1, d.Y)
-
-		hitInfo.Delta = v.Vec{X: 0, Y: py * sy}
-		hitInfo.Normal = v.Vec{X: 0, Y: sy}
-
-		hitInfo.Pos = v.Vec{
-			X: boxB.Pos.X,
-			Y: boxA.Pos.Y + boxA.Half.Y*sy,
-		}
+		h.Normal = v.Vec{X: 0, Y: sy}
+		h.Time = py
 	}
+
 	return true
 }

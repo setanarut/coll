@@ -7,22 +7,20 @@ import (
 )
 
 // BoxCircleOverlap checks whether box and circle overlap.
-// Any collision information written to hitInfo always describes how to move circle out of box.
+// Any collision information written to hitInfo always describes how to move box out of circle.
 //
 // It uses a separating-axis test: if the circle do not overlap on either X or Y,
 // there is no collision and the function returns false.
 //
 // If hitInfo is not nil, the function fills it with:
-//   - Delta: the minimum vector needed to push boxA out of boxB
-//   - Normal: the direction in which boxA is pushed
-//   - Pos: an approximate contact position on the collision side
+//   - Normal: the direction in which the box is pushed
+//   - Time: penetration depth normalized (0-1 range based on box dimensions)
 //
-// This method can behave poorly for moving objects. For continuous motion,
-// BoxCircleSweep2() should be used instead.
+// This method can behave poorly for moving objects.
 //
-// If you only need to know whether a collision occurred, pass nil for hitInfo
-// to skip generating collision details.
-func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
+// If you only need to know whether a overlap occurred, pass nil for hitInfo
+// to skip generating overlap details.
+func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *Hit) bool {
 
 	// intersection test
 	diff := circle.Pos.Sub(box.Pos)
@@ -47,14 +45,13 @@ func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 		dist := math.Sqrt(distSq)
 
 		// Normalize the normal vector
-		hitInfo.Normal = normal.DivS(dist)
+		hitInfo.Normal = normal.DivS(dist).Scale(-1) // Inverse for box
 
-		// Penetration amount: Radius - Distance from center to surface
+		// Penetration amount
 		penetration := circle.Radius - dist
-		hitInfo.Delta = hitInfo.Normal.Scale(penetration)
-
-		// Contact point is the closest point on the box (converted to world coordinates)
-		hitInfo.Pos = box.Pos.Add(clamped)
+		// Normalize based on the axis with maximum box dimension
+		maxBoxDim := math.Max(box.Half.X, box.Half.Y) * 2
+		hitInfo.Time = 1.0 - (penetration / maxBoxDim)
 
 	} else {
 		absD := diff.Abs()
@@ -64,25 +61,21 @@ func BoxCircleOverlap(box *AABB, circle *Circle, hitInfo *HitInfo) bool {
 		if px < py {
 			sx := math.Copysign(1, diff.X)
 			pushDistance := px + circle.Radius
-			hitInfo.Delta = v.Vec{X: pushDistance * sx, Y: 0}
-			hitInfo.Normal = v.Vec{X: sx, Y: 0}
-			hitInfo.Pos = v.Vec{
-				X: box.Pos.X + box.Half.X*sx,
-				Y: circle.Pos.Y,
-			}
+			hitInfo.Normal = v.Vec{X: -sx, Y: 0} // Inverse for box
+			hitInfo.Time = 1.0 - (pushDistance / (box.Half.X * 2))
 		} else {
 			sy := math.Copysign(1, diff.Y)
-
 			pushDistance := py + circle.Radius
-
-			hitInfo.Delta = v.Vec{X: 0, Y: pushDistance * sy}
-			hitInfo.Normal = v.Vec{X: 0, Y: sy}
-
-			hitInfo.Pos = v.Vec{
-				X: circle.Pos.X,
-				Y: box.Pos.Y + box.Half.Y*sy,
-			}
+			hitInfo.Normal = v.Vec{X: 0, Y: -sy} // Inverse for box
+			hitInfo.Time = 1.0 - (pushDistance / (box.Half.Y * 2))
 		}
 	}
 	return true
+}
+
+// ResolvePosition calculates the resolved position by applying the collision response.
+// It takes the original position, hit normal, and hit time (penetration distance),
+// and returns the new position that separates the objects.
+func ResolvePosition(pos v.Vec, normal v.Vec, time float64) v.Vec {
+	return pos.Add(normal.Scale(time))
 }

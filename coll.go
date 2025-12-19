@@ -10,17 +10,15 @@ const (
 	Padding float64 = 0.005
 )
 
-// HitInfo holds the detailed information about a collision or contact event.
-type HitInfo struct {
-	Pos    v.Vec   // The position where the collision occurred (contact point).
-	Delta  v.Vec   // The remaining movement vector after the collision.
+// Hit holds the information about a collision or contact event.
+type Hit struct {
 	Normal v.Vec   // The normal vector of the surface hit.
 	Time   float64 // The time (0.0 to 1.0) along the movement path when the collision happened.
 }
 
-// Resets the HitInfo struct to its zero values.
-func (h *HitInfo) Reset() {
-	*h = HitInfo{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
+// Resets the zero values.
+func (h *Hit) Reset() {
+	*h = Hit{} // Reinitializes all fields of the struct to their zero values (nil, 0, false, etc.).
 }
 
 func SegmentNormal(pos1, pos2 v.Vec) (normal v.Vec) {

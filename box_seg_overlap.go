@@ -14,8 +14,8 @@ import (
 //   - start - Ray segment origin/start position
 //   - delta - Ray segment move/displacement vector
 //   - padding - Padding added to the radius of the bounding box
-//   - hitInfo - Contact info for segment. Filled when argument isn't nil and a collision occurs
-func BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo) bool {
+//   - h - Contact info for segment. Filled when argument isn't nil and a collision occurs
+func BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, h *Hit) bool {
 
 	scale := v.One.Div(delta)
 	signVec := v.Vec{X: math.Copysign(1, scale.X), Y: math.Copysign(1, scale.Y)}
@@ -40,20 +40,17 @@ func BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, hitInfo *HitInfo)
 		return false
 	}
 
-	if hitInfo == nil {
+	if h == nil {
 		return true
 	}
 
-	hitInfo.Time = max(0, min(1, nearTime))
+	h.Time = max(0, min(1, nearTime))
 
 	if nearTimes.X > nearTimes.Y {
-		hitInfo.Normal = v.Vec{X: -signVec.X, Y: 0}
+		h.Normal = v.Vec{X: -signVec.X, Y: 0}
 	} else {
-		hitInfo.Normal = v.Vec{X: 0, Y: -signVec.Y}
+		h.Normal = v.Vec{X: 0, Y: -signVec.Y}
 	}
-
-	hitInfo.Delta = delta.Neg().Scale(1.0 - hitInfo.Time)
-	hitInfo.Pos = start.Add(delta.Scale(hitInfo.Time))
 
 	return true
 }

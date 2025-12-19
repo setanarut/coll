@@ -85,19 +85,20 @@ func FillBox(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.FillRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), clr, false)
 }
 
-func DrawHitNormal(dst *ebiten.Image, hit *coll.HitInfo, clr color.Color, arrow bool) {
-	DrawRay(dst, hit.Pos, hit.Normal, 12, clr, arrow)
-}
+// func DrawHitNormal(dst *ebiten.Image, hit *coll.Hit, pos, vel v.Vec, clr color.Color, arrow bool) {
+// 	hitpos := pos.Add(vel.Scale(hit.Time))
+// 	DrawRay(dst, hitpos, hit.Normal, 12, clr, arrow)
+// }
 
 func CursorPos() v.Vec {
 	curX, curY := ebiten.CursorPosition()
 	return v.Vec{float64(curX), float64(curY)}
 }
 
-func PrintHitInfoAt(dst *ebiten.Image, hit *coll.HitInfo, x, y int) {
+func PrintHitInfoAt(dst *ebiten.Image, hit *coll.Hit, x, y int) {
 	ebitenutil.DebugPrintAt(
 		dst,
-		fmt.Sprintf("Pos: %v\nDelta: %v\nNormal: %v\nTime: %v", hit.Pos, hit.Delta, hit.Normal, hit.Time),
+		fmt.Sprintf("Normal: %v\nTime: %v", hit.Normal, hit.Time),
 		x,
 		y,
 	)
@@ -124,7 +125,7 @@ func DrawRay(s *ebiten.Image, pos, dir v.Vec, length float64, clr color.Color, a
 	DrawLine(s, pos, end, clr)
 
 	if arrow {
-		arrowLen := 6.0
+		arrowLen := 12.0
 		arrowAngle := math.Pi / 7
 
 		unitDir := dir.Unit()

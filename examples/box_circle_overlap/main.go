@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"log"
 
 	"github.com/setanarut/coll"
@@ -13,10 +14,10 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-var wall = coll.NewAABB(250, 250, 100, 100)
+var box = coll.NewAABB(250, 250, 100, 100)
 var circle = coll.NewCircle(200, 200, 25)
 
-var hit = &coll.HitInfo{}
+var hit = &coll.Hit{}
 
 var collided bool
 var velocity = v.Vec{}
@@ -40,18 +41,18 @@ func (g *Game) Update() error {
 	circle.Pos = circle.Pos.Add(velocity)
 
 	hit.Reset()
-	collided = coll.BoxCircleOverlap(wall, circle, hit)
+	collided = coll.BoxCircleOverlap(box, circle, hit)
 
-	circle.Pos = circle.Pos.Add(hit.Delta)
+	box.Pos = box.Pos.Add(hit.Delta)
 	return nil
 }
 
 func (g *Game) Draw(s *ebiten.Image) {
-	examples.StrokeBox(s, wall, colornames.Gray)
+	examples.StrokeBox(s, box, colornames.Gray)
 	if collided {
 		examples.StrokeCircleAt(s, cursor, circle.Radius, colornames.Red)
 		examples.StrokeCircle(s, circle, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
+		examples.DrawHitNormal(s, hit, box.Pos, velocity, color.White, true)
 	} else {
 		examples.StrokeCircle(s, circle, colornames.Gray)
 	}
