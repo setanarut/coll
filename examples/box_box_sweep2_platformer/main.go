@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"log"
 	"math"
 
@@ -15,23 +16,23 @@ import (
 )
 
 const (
-	ScreenWidth          = 854
-	ScreenHeight         = 480
-	Gravity      float64 = 1.6
-	JumpForce    float64 = -30
-	PlayerSpeed  float64 = 5
-	PlatSpeed    float64 = 1.5
+	ScreenWidth   = 854
+	ScreenHeight  = 480
+	MoveSpeedX    = 6.125
+	JumpPower     = -21.46
+	Gravity       = 0.86
+	PlatformSpeed = 0.03
 )
 
 var (
-	box         = coll.NewAABB(425, 250, 16, 35)
-	boxVel      = v.Vec{0, 0}
-	hitInfoBoxB = &coll.HitInfo{}
+	player        = coll.NewAABB(425, 250, 16, 36)
+	playerVel     = v.Vec{0, 0}
+	playerHitInfo = &coll.HitInfo{}
 )
 var (
-	platform       = coll.NewAABB(400, 300, 100, 10)
-	platVel        = v.Vec{0, 0}
-	platformCenter = v.Vec{X: ScreenWidth / 2, Y: 300}
+	platform       = coll.NewAABB(400, 300, 64, 16)
+	platformVel    = v.Vec{}
+	platformCenter = v.Vec{X: ScreenWidth / 2, Y: 200}
 	platformRadius = 150.0
 	platformAngle  = 0.0
 )
@@ -39,113 +40,78 @@ var (
 type Game struct{}
 
 func (g *Game) Update() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
-		switch ebiten.TPS() {
-		case 60:
-			ebiten.SetTPS(4)
-		case 4:
-			ebiten.SetTPS(60)
-		}
-	}
-
-	// 1. Calculate platform movement for this frame
-	platformAngle += 0.02
-	newPlatCenterX := platformCenter.X + math.Cos(platformAngle)*platformRadius
-	newPlatCenterY := platformCenter.Y + math.Sin(platformAngle)*platformRadius
-	newPlatPos := v.Vec{X: newPlatCenterX - platform.Half.X, Y: newPlatCenterY - platform.Half.Y}
-	platVel = newPlatPos.Sub(platform.Pos)
-
-	// 2. Apply gravity
-	boxVel.Y += Gravity
-
-	// 3. Handle player input and collision
-	axis := examples.Axis().Unit()
-	playerInputVelX := axis.X * PlayerSpeed
-
-	hitInfoBoxB.Reset()
+	updatePlatformVelocity()
+	playerVel.Y += Gravity
+	speed := examples.Axis().Unit().Scale(MoveSpeedX)
+	playerHitInfo.Reset()
+	hit := coll.BoxBoxSweep2(platform, player, platformVel, playerVel, playerHitInfo)
 	onGround := false
-	if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) && hitInfoBoxB.Normal.Y == -1 {
-		onGround = true
+	if hit && playerHitInfo.Normal.Y == -1 {
+		playerPosAtHit := player.Pos.Add(playerVel.Scale(playerHitInfo.Time))
+		platformPosAtHit := platform.Pos.Add(platformVel.Scale(playerHitInfo.Time))
+		playerBottomAtHit := playerPosAtHit.Y + player.Half.Y
+		platformTopAtHit := platformPosAtHit.Y - platform.Half.Y
+		onGround = playerBottomAtHit <= platformTopAtHit
+	}
+	if onGround {
+		player.Pos = player.Pos.Add(playerVel.Scale(playerHitInfo.Time))
+		player.Pos.Y = platform.Pos.Y + platformVel.Y - player.Half.Y - platform.Half.Y
+		player.Pos.X += platformVel.X + speed.X
+		playerVel.X = platformVel.X + speed.X
+		playerVel.Y = platformVel.Y
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			playerVel.Y = JumpPower
+		}
+	} else {
+		playerVel.X = speed.X
+		player.Pos = player.Pos.Add(playerVel)
+	}
+	platform.Pos = platform.Pos.Add(platformVel)
+	if player.Bottom() >= ScreenHeight {
+		player.SetBottom(ScreenHeight)
+		playerVel.Y = 0
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			playerVel.Y = JumpPower
+		}
 	}
 
 	if onGround {
-		// --- On-Ground Logic ---
-		// Move box with platform first to ensure it sticks
-		box.Pos = box.Pos.Add(platVel)
-		// Then snap its bottom to the platform's new top position to prevent jitter/sinking
-		box.SetBottom(platform.Top() + platVel.Y)
-
-		// Add player's horizontal movement
-		box.Pos.X += playerInputVelX
-
-		// Update velocity for the NEXT frame
-		boxVel.X = platVel.X + playerInputVelX
-		boxVel.Y = platVel.Y // Y velocity matches the platform's
-
-		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			boxVel.Y += JumpForce
-		}
-	} else {
-		// --- In-Air / Other Collision Logic ---
-		boxVel.X = playerInputVelX // Apply air control
-
-		relVel := boxVel.Sub(platVel)
-		hitInfoBoxB.Reset() // Reset for a new check
-		if coll.BoxBoxSweep2(platform, box, platVel, boxVel, hitInfoBoxB) {
-			// A collision will happen (e.g., hitting side/bottom of the platform)
-			moveRel := slide(relVel, hitInfoBoxB)
-			totalMove := moveRel.Add(platVel)
-			box.Pos = box.Pos.Add(totalMove)
-
-			if hitInfoBoxB.Normal.Y == 1 { // Hit bottom of platform
-				boxVel.Y = 0
-			}
-		} else {
-			// No collision with platform, move freely
-			box.Pos = box.Pos.Add(boxVel)
-		}
+		player.Pos.X = math.Floor(player.Pos.X) + Fract(platform.Pos.X)
 	}
-
-	// 4. Update platform position
-	platform.Pos = platform.Pos.Add(platVel)
-
-	// 5. Final ground check (floor)
-	if box.Bottom() >= ScreenHeight {
-		box.SetBottom(ScreenHeight)
-		boxVel.Y = 0
-		onGround = true
-		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			boxVel.Y += JumpForce
-		}
-	}
-
 	return nil
 }
+
+func updatePlatformVelocity() {
+	platformAngle += PlatformSpeed
+	newPlatCenterX := platformCenter.X + math.Cos(platformAngle)*platformRadius
+	newPlatCenterY := platformCenter.Y + math.Sin(platformAngle)*platformRadius
+	newPlatPos := v.Vec{X: newPlatCenterX, Y: newPlatCenterY}
+	platformVel = newPlatPos.Sub(platform.Pos)
+}
 func (g *Game) Draw(screen *ebiten.Image) {
-	examples.FillBox(screen, box, colornames.Green)
-	examples.FillBox(screen, platform, colornames.Gray)
-	ebitenutil.DebugPrintAt(screen, "Controls: WASD / Space", 10, 10)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Player Velocity: %.2f", boxVel.Y), 10, 30)
-	examples.PrintHitInfoAt(screen, hitInfoBoxB, 10, 100)
+	screen.Fill(color.Gray{20})
+	examples.StrokeBox(screen, player, colornames.Green)
+	examples.StrokeBox(screen, platform, colornames.Darkgray)
+	examples.PrintHitInfoAt(screen, playerHitInfo, 20, 20)
+	ebitenutil.DebugPrintAt(screen, "Space - Jump\nA/D - Move", 400, 100)
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ScreenWidth, ScreenHeight
 }
 func main() {
+	ebiten.SetScreenClearedEveryFrame(false)
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetWindowTitle("Relative Velocity Platformer Example")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}
+
 }
 
-func slide(vel v.Vec, hitInfo *coll.HitInfo) (slideVel v.Vec) {
-	movementToHit := vel.Scale(hitInfo.Time)
-	remainingVel := vel.Sub(movementToHit)
-	dot := remainingVel.Dot(hitInfo.Normal)
-	if dot > 0 {
-		return movementToHit.Add(remainingVel)
+// Fract returns the fractional part of x.
+func Fract(x float64) float64 {
+	if x >= 0 {
+		return x - math.Floor(x)
 	}
-	slideDirection := remainingVel.Sub(hitInfo.Normal.Scale(dot))
-	return movementToHit.Add(slideDirection)
+	return x - math.Ceil(x)
 }
