@@ -18,11 +18,12 @@ import (
 var screen = v.Vec{400, 180}
 
 var (
-	hitInfo = &coll.HitInfo{}
-	IsHit   bool
-	start   = screen.Scale(0.5)
-	angle   float64
-	TileMap = [][]uint8{
+	rayPos   = screen.Scale(0.5)
+	rayDir   v.Vec
+	rayMag   = 100.0
+	hit      = &coll.Hit{}
+	cellSize = 25
+	TileMap  = [][]uint8{
 		{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 6, 0, 1},
 		{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 3, 1},
@@ -31,8 +32,11 @@ var (
 		{0, 4, 0, 5, 5, 5, 5, 0, 5, 5, 5, 5, 0, 0, 0},
 		{4, 2, 8, 1, 1, 1, 1, 0, 1, 1, 1, 1, 88, 13, 1},
 	}
-	cellSize = 25
-	dir      v.Vec
+)
+
+var (
+	IsHit    bool
+	angle    float64
 	coords   image.Point
 	collided bool
 )
@@ -44,9 +48,10 @@ func (g *Game) Update() error {
 	if angle >= 2*math.Pi {
 		angle = 0
 	}
-	dir = v.FromAngle(angle)
+	rayDir = v.FromAngle(angle)
 
-	collided, coords = coll.RayTilemapDDA(start, dir, 400, TileMap, float64(cellSize), hitInfo)
+	hit.Reset()
+	collided, coords = coll.RayTilemapDDA(rayPos, rayDir, rayMag, TileMap, float64(cellSize), hit)
 
 	return nil
 }
@@ -68,11 +73,18 @@ func (g *Game) Draw(s *ebiten.Image) {
 		}
 	}
 
-	examples.DrawLine(s, start, hitInfo.Pos, colornames.Green)
-	examples.DrawHitNormal(s, hitInfo, colornames.Yellow, true)
+	// Draw full ray
+	examples.DrawRay(s, rayPos, rayDir, rayMag, colornames.White, true)
+
+	// Draw hit segment
+	collisionPoint := rayPos.Add(rayDir.Scale(rayMag * hit.Data))
+	examples.DrawLine(s, rayPos, collisionPoint, colornames.Lime)
+
+	// Draw collision point
+	examples.FillCircleAt(s, collisionPoint, 3, colornames.Red)
 
 	// collision info
-	examples.PrintHitInfoAt(s, hitInfo, 10, 10)
+	examples.PrintHitInfoAt(s, hit, 10, 10, false)
 	ebitenutil.DebugPrintAt(s, fmt.Sprintf("Coords: %v", coords), 10, 100)
 }
 

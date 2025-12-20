@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,13 +12,15 @@ import (
 )
 
 var (
-	circle1 = coll.NewCircle(250, 250, 30)
-	cVel1   = v.Vec{4, 0}
+	circle1    = coll.NewCircle(250, 250, 30)
+	circle1Vel = v.Vec{2, 0}
 )
 var (
-	circle2 = coll.NewCircle(250, 250, 10)
-	cVel2   = v.Vec{-4, 0}
+	circle2    = coll.NewCircle(250, 250, 30)
+	circle2Vel = v.Vec{0, 0}
 )
+
+var circ2HitInfo = &coll.Hit{}
 
 var collided bool
 
@@ -35,20 +38,23 @@ type Game struct {
 
 func (g *Game) Update() error {
 
-	cVel2 = examples.CursorPos().Sub(circle2.Pos)
+	circle1Vel = examples.CursorPos().Sub(circle1.Pos)
+
+	circ2HitInfo.Reset()
 	collided = coll.CircleCircleSweep2(
 		circle1,
 		circle2,
-		cVel1,
-		cVel2,
+		circle1Vel,
+		circle2Vel,
+		circ2HitInfo,
 	)
 
-	circle2.Pos = circle2.Pos.Add(cVel2)
-	circle1.Pos = circle1.Pos.Add(cVel1)
+	circle1.Pos = circle1.Pos.Add(circle1Vel)
+	circle2.Pos = circle2.Pos.Add(circle2Vel)
 
-	cx := circle1.Pos.X
+	cx := circle2.Pos.X
 	if cx < 0 || cx > g.ScreenWidth {
-		cVel1.X *= -1
+		circle2Vel.X *= -1
 	}
 
 	return nil
@@ -58,9 +64,12 @@ func (g *Game) Draw(s *ebiten.Image) {
 	examples.StrokeCircle(s, circle1, colornames.Gray)
 	if collided {
 		examples.StrokeCircle(s, circle2, colornames.Yellow)
+		examples.DrawRay(s, circle2.Pos, circ2HitInfo.Normal, 20, color.White, true)
 	} else {
 		examples.StrokeCircle(s, circle2, colornames.Gray)
 	}
+
+	examples.PrintHitInfoAt(s, circ2HitInfo, 30, 30, false)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {

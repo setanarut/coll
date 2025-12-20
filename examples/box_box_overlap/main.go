@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"log"
 
 	"github.com/setanarut/coll"
@@ -16,7 +17,7 @@ import (
 var wall = coll.NewAABB(250, 250, 100, 25)
 var box = coll.NewAABB(200, 200, 25, 25)
 
-var hit = &coll.HitInfo{}
+var hit = &coll.Hit{}
 
 var collided bool
 var velocity = v.Vec{}
@@ -41,8 +42,7 @@ func (g *Game) Update() error {
 
 	hit.Reset()
 	collided = coll.BoxBoxOverlap(wall, box, hit)
-
-	box.Pos = box.Pos.Add(hit.Delta)
+	box.Pos = box.Pos.Add(hit.Normal.Scale(hit.Data))
 	return nil
 }
 
@@ -51,11 +51,15 @@ func (g *Game) Draw(s *ebiten.Image) {
 	if collided {
 		examples.StrokeBoxAt(s, cursor, box.Half, colornames.Red)
 		examples.StrokeBox(s, box, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
+
+		// DrawNormal
+		contactEdgePos := box.Pos.Sub(hit.Normal.Mul(box.Half))
+		examples.DrawRay(s, contactEdgePos, hit.Normal, 20, color.White, true)
+
 	} else {
 		examples.StrokeBox(s, box, colornames.Gray)
 	}
-	examples.PrintHitInfoAt(s, hit, 10, 10)
+	examples.PrintHitInfoAt(s, hit, 10, 10, true)
 
 	ebitenutil.DebugPrintAt(
 		s,

@@ -14,13 +14,11 @@ import (
 
 var (
 	box               = coll.NewAABB(250, 250, 16, 16)
-	hit               = &coll.HitInfo{}
+	hit               = &coll.Hit{}
 	collided          bool
 	pos1, pos2, delta v.Vec
 	angle             float64
 )
-
-// var center = v.Vec{250, 250}
 
 func main() {
 	g := &Game{}
@@ -34,7 +32,7 @@ type Game struct{}
 
 func (g *Game) Update() error {
 
-	angle += 0.5 * math.Pi * 0.02
+	angle += 0.5 * math.Pi * 0.01
 
 	pos1.X = box.Pos.X + math.Cos(angle)*64
 	pos1.Y = box.Pos.Y + math.Sin(angle)*64
@@ -60,8 +58,9 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 	if collided {
 		examples.DrawRay(s, pos1, delta.Unit(), delta.Mag(), colornames.Red, true)
-		examples.DrawLine(s, pos1, hit.Pos, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
+		// normal arrow
+		hitPos := pos1.Add(delta.Scale(hit.Data))
+		examples.DrawRay(s, hitPos, hit.Normal, 20, colornames.White, true)
 	} else {
 		examples.DrawRay(s, pos1, delta.Unit(), delta.Mag(), colornames.Green, true)
 	}

@@ -28,7 +28,7 @@ var (
 	sweepDelta = v.Vec{32, -96}
 	tempBox    = coll.NewAABB(250, 250, 16, 16)
 
-	hit   = &coll.HitInfo{}
+	hit   = &coll.Hit{}
 	index int
 )
 
@@ -66,9 +66,13 @@ func (g *Game) Draw(s *ebiten.Image) {
 		examples.StrokeBox(s, tempBox, colornames.Red)
 
 		// Draw a yellow box at the point it actually got to
-		tempBox.Pos = box.Pos.Add(delta.Scale(hit.Time))
+		tempBox.Pos = box.Pos.Add(delta.Scale(hit.Data))
 		examples.StrokeBox(s, tempBox, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
+
+		// Draw hit normal
+		hitPos := box.Pos.Add(delta.Scale(hit.Data))
+		examples.DrawRay(s, hitPos, hit.Normal, 20, colornames.White, true)
+
 		ebitenutil.DebugPrint(s, "line index: "+strconv.Itoa(index))
 
 	} else {

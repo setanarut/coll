@@ -16,7 +16,7 @@ import (
 var (
 	box          = coll.NewAABB(250, 100, 16, 16)
 	wall         = coll.NewAABB(250, 250, 16*4, 16)
-	hit          = &coll.HitInfo{}
+	hit          = &coll.Hit{}
 	wallVelocity = v.Vec{X: 5}
 	boxVelocity  = v.Vec{}
 	collided     bool
@@ -34,12 +34,12 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	boxVelocity = examples.Axis().Unit().Scale(3)
+	boxVelocity = examples.Axis().Unit().Scale(5)
 	hit.Reset()
 	collided = coll.BoxBoxSweep2(wall, box, wallVelocity, boxVelocity, hit)
 	if collided {
 
-		box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Time))
+		box.Pos = box.Pos.Add(boxVelocity.Scale(hit.Data))
 		box.Pos = box.Pos.Add(wallVelocity)
 
 		if hit.Normal.Y == -1 {
@@ -52,15 +52,14 @@ func (g *Game) Update() error {
 		box.Pos = box.Pos.Add(boxVelocity)
 	}
 
-	if wall.Right() > 500 {
+	if wall.Right() > 400 {
 		wallVelocity = wallVelocity.NegX()
 	}
-	if wall.Left() < 0 {
+	if wall.Left() < 100 {
 		wallVelocity = wallVelocity.NegX()
 	}
 
 	wall.Pos = wall.Pos.Add(wallVelocity)
-	// box.Pos = box.Pos.Add(boxVelocity)
 	return nil
 }
 
@@ -68,7 +67,8 @@ func (g *Game) Draw(s *ebiten.Image) {
 	examples.StrokeBox(s, wall, colornames.Gray)
 	if collided {
 		examples.StrokeBox(s, box, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, colornames.Yellow, false)
+		// Draw normal
+		examples.DrawRay(s, box.Pos, hit.Normal, 30, colornames.White, true)
 	} else {
 		examples.StrokeBox(s, box, colornames.Green)
 	}
@@ -82,7 +82,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 		10,
 		10,
 	)
-	examples.PrintHitInfoAt(s, hit, 10, 100)
+	examples.PrintHitInfoAt(s, hit, 10, 100, false)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
