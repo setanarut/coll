@@ -8,15 +8,17 @@ import (
 
 // BoxSegmentSweep1 sweep a moving AABB against a line segment.
 //
-// Return true when the box hits the segment.
+// If h is not nil and a collision is detected, it will be populated with:
+//   - Normal: Collision surface normal for the box
+//   - Data: Normalized time of impact (0.0 to 1.0) along the movement path
 //
 // Params:
 //
 //   - line - static line segment
 //   - box - moving box
-//   - delta - delta movement vector of the aabb
-//   - hitInfo - optional contact data structure filled on hit, can be nil
-func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) bool {
+//   - delta - delta movement vector of the box
+//   - h - optional contact data structure filled on hit, can be nil
+func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 
 	var lineMin, lineMax v.Vec
 
@@ -164,13 +166,9 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, hitInfo *HitInfo) b
 		return false
 	}
 
-	if hitInfo != nil {
-		hitInfo.Delta.X = delta.X*hitTime + (Padding * hitNormal.X)
-		hitInfo.Delta.Y = delta.Y*hitTime + (Padding * hitNormal.Y)
-		hitInfo.Pos = box.Pos.Add(hitInfo.Delta)
-		hitInfo.Normal = hitNormal
-		hitInfo.Time = hitTime
-		// hitInfo.collider = line
+	if h != nil {
+		h.Normal = hitNormal
+		h.Data = hitTime
 	}
 	return true
 }

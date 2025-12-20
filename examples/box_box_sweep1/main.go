@@ -26,7 +26,7 @@ var (
 	sweepDeltas = [2]v.Vec{{64, -12}, {-32, 96}}
 	deltas      = [2]v.Vec{}
 
-	hitInfos = [2]*coll.HitInfo{{}, {}}
+	hitInfos = [2]*coll.Hit{{}, {}}
 	sweeps   [2]bool
 )
 
@@ -67,9 +67,10 @@ func (g *Game) Draw(s *ebiten.Image) {
 			examples.StrokeBox(s, tempBoxes[i], colornames.Red)
 
 			// Draw a yellow box at the point it actually got to
-			tempBoxes[i].Pos = box.Pos.Add(deltas[i].Scale(hitInfos[i].Time))
+			tempBoxes[i].Pos = box.Pos.Add(deltas[i].Scale(hitInfos[i].Data))
 			examples.StrokeBox(s, tempBoxes[i], colornames.Yellow)
-			examples.DrawHitNormal(s, hitInfos[i], colornames.Yellow, false)
+			// Draw normal
+			examples.DrawRay(s, tempBoxes[i].Pos, hitInfos[i].Normal, 30, colornames.White, true)
 
 		} else {
 			tempBoxes[i].Pos = box.Pos.Add(deltas[i])

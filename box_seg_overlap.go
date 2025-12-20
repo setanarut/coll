@@ -44,7 +44,7 @@ func BoxSegmentOverlap(box *AABB, start, delta, padding v.Vec, h *Hit) bool {
 		return true
 	}
 
-	h.Time = max(0, min(1, nearTime))
+	h.Data = max(0, min(1, nearTime))
 
 	if nearTimes.X > nearTimes.Y {
 		h.Normal = v.Vec{X: -signVec.X, Y: 0}

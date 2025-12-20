@@ -27,7 +27,7 @@ const (
 var (
 	player        = coll.NewAABB(425, 250, 16, 36)
 	playerVel     = v.Vec{0, 0}
-	playerHitInfo = &coll.HitInfo{}
+	playerHitInfo = &coll.Hit{}
 )
 var (
 	platform       = coll.NewAABB(400, 300, 64, 16)
@@ -47,14 +47,14 @@ func (g *Game) Update() error {
 	hit := coll.BoxBoxSweep2(platform, player, platformVel, playerVel, playerHitInfo)
 	onGround := false
 	if hit && playerHitInfo.Normal.Y == -1 {
-		playerPosAtHit := player.Pos.Add(playerVel.Scale(playerHitInfo.Time))
-		platformPosAtHit := platform.Pos.Add(platformVel.Scale(playerHitInfo.Time))
+		playerPosAtHit := player.Pos.Add(playerVel.Scale(playerHitInfo.Data))
+		platformPosAtHit := platform.Pos.Add(platformVel.Scale(playerHitInfo.Data))
 		playerBottomAtHit := playerPosAtHit.Y + player.Half.Y
 		platformTopAtHit := platformPosAtHit.Y - platform.Half.Y
 		onGround = playerBottomAtHit <= platformTopAtHit
 	}
 	if onGround {
-		player.Pos = player.Pos.Add(playerVel.Scale(playerHitInfo.Time))
+		player.Pos = player.Pos.Add(playerVel.Scale(playerHitInfo.Data))
 		player.Pos.Y = platform.Pos.Y + platformVel.Y - player.Half.Y - platform.Half.Y
 		player.Pos.X += platformVel.X + speed.X
 		playerVel.X = platformVel.X + speed.X
@@ -74,7 +74,7 @@ func (g *Game) Update() error {
 			playerVel.Y = JumpPower
 		}
 	}
-
+	// inherit only the platform's fractional X offset to avoid sub-pixel jitter.
 	if onGround {
 		player.Pos.X = math.Floor(player.Pos.X) + Fract(platform.Pos.X)
 	}
@@ -88,12 +88,12 @@ func updatePlatformVelocity() {
 	newPlatPos := v.Vec{X: newPlatCenterX, Y: newPlatCenterY}
 	platformVel = newPlatPos.Sub(platform.Pos)
 }
-func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.Gray{20})
-	examples.StrokeBox(screen, player, colornames.Green)
-	examples.StrokeBox(screen, platform, colornames.Darkgray)
-	examples.PrintHitInfoAt(screen, playerHitInfo, 20, 20)
-	ebitenutil.DebugPrintAt(screen, "Space - Jump\nA/D - Move", 400, 100)
+func (g *Game) Draw(s *ebiten.Image) {
+	s.Fill(color.Gray{20})
+	examples.StrokeBox(s, player, colornames.Green)
+	examples.StrokeBox(s, platform, colornames.Darkgray)
+	examples.PrintHitInfoAt(s, playerHitInfo, 30, 30, false)
+	ebitenutil.DebugPrintAt(s, "Space - Jump\nA/D - Move", 400, 100)
 }
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return ScreenWidth, ScreenHeight

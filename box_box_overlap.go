@@ -7,12 +7,10 @@ import (
 )
 
 // BoxBoxOverlap checks whether a and b overlap.
-// Hit describes how to move a out of b.
 //
-// If h is not nil, the function fills it with:
-//   - Time: the penetration depth (overlap distance), where pos.Add(normal.Scale(time))
-//     gives the pushback distance needed to resolve the overlap
-//   - Normal: the direction in which boxA is pushed
+// If h is not nil, the function fills it with for box b:
+//   - Normal: Collision surface normal for box b
+//   - Data: the penetration depth for box b (overlap distance)
 //
 // This method can behave poorly for moving objects.
 //
@@ -41,11 +39,11 @@ func BoxBoxOverlap(a, b *AABB, h *Hit) bool {
 	if px < py {
 		sx := math.Copysign(1, d.X)
 		h.Normal = v.Vec{X: sx, Y: 0}
-		h.Time = px
+		h.Data = px
 	} else {
 		sy := math.Copysign(1, d.Y)
 		h.Normal = v.Vec{X: 0, Y: sy}
-		h.Time = py
+		h.Data = py
 	}
 
 	return true

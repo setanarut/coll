@@ -7,14 +7,21 @@ import (
 )
 
 // CircleCircleSweep2 checks for collision between two moving circles to prevent tunneling.
-// It treats the movement as a continuous sweep from t=0 to t=1.
 //
 // Returns true if collision occurs during movement or if they are already overlapping.
-func CircleCircleSweep2(c1, c2 *Circle, c1Vel, c2Vel v.Vec) bool {
+//
+// If h is not nil and a collision is detected, it will be populated with:
+//   - Normal: Collision surface normal for c2
+//   - Data: Normalized time of impact (0.0 to 1.0) along the movement path
+func CircleCircleSweep2(c1, c2 *Circle, c1Vel, c2Vel v.Vec, h *Hit) bool {
 	rSum := c1.Radius + c2.Radius
 	rSumSq := rSum * rSum
 	pDiff := c2.Pos.Sub(c1.Pos)
 	if pDiff.MagSq() <= rSumSq {
+		if h != nil {
+			h.Data = 0.0
+			h.Normal = pDiff.Unit().Neg()
+		}
 		return true
 	}
 	relVel := c2Vel.Sub(c1Vel)
@@ -31,7 +38,12 @@ func CircleCircleSweep2(c1, c2 *Circle, c1Vel, c2Vel v.Vec) bool {
 	sqrtDisc := math.Sqrt(discriminant)
 	t1 := (-b - sqrtDisc) / (2.0 * a)
 	if t1 >= 0.0 && t1 <= 1.0 {
+		if h != nil {
+			h.Data = t1
+			h.Normal = pDiff.Add(relVel.Scale(t1)).Unit().Neg()
+		}
 		return true
 	}
+
 	return false
 }

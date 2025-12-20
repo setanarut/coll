@@ -13,14 +13,16 @@ import (
 	"golang.org/x/image/colornames"
 )
 
+const boxSpeed = 6
+
 var (
 	staticLine = &coll.Segment{
 		v.Vec{0, 250},
 		v.Vec{500, 250},
 	}
-	box      = coll.NewAABB(0, 0, 16, 16)
-	hit      = &coll.HitInfo{}
-	dir      = v.FromAngle(math.Pi / 4).Scale(6)
+	box      = coll.NewAABB(0, 0, 20, 30)
+	hit      = &coll.Hit{}
+	boxVel   = v.FromAngle(math.Pi / 4).Scale(boxSpeed)
 	collided bool
 )
 
@@ -36,13 +38,13 @@ type Game struct{}
 
 func (g *Game) Update() error {
 
-	collided = coll.BoxSegmentSweep1(staticLine, box, dir, hit)
+	hit.Reset()
+	collided = coll.BoxSegmentSweep1(staticLine, box, boxVel, hit)
 
 	if collided {
-		box.Pos = box.Pos.Add(slide(dir, hit))
+		box.Pos = box.Pos.Add(slide(boxVel, hit))
 	} else {
-		box.Pos = box.Pos.Add(dir)
-
+		box.Pos = box.Pos.Add(boxVel)
 	}
 
 	if box.Pos.X > 500 {
@@ -56,18 +58,22 @@ func (g *Game) Update() error {
 func (g *Game) Draw(s *ebiten.Image) {
 	examples.DrawSegment(s, staticLine, colornames.Gray)
 	examples.StrokeBox(s, box, colornames.Green)
+	examples.PrintHitInfoAt(s, hit, 10, 10, false)
+	if collided {
+		examples.DrawRay(s, box.Pos, hit.Normal, 30, colornames.Yellow, true)
+	}
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
 	return 500, 500
 }
 
-func slide(vel v.Vec, hitInfo *coll.HitInfo) (slideVel v.Vec) {
-	movementToHit := vel.Scale(hitInfo.Time)
+func slide(vel v.Vec, hit *coll.Hit) (slideVel v.Vec) {
+	movementToHit := vel.Scale(hit.Data)
 	remainingVel := vel.Sub(movementToHit)
 	originalSpeed := remainingVel.Mag()
-	slideDirection := remainingVel.Sub(hitInfo.Normal.Scale(remainingVel.Dot(hitInfo.Normal)))
-	if slideDirection.MagSq() < 1e-6 {
+	slideDirection := remainingVel.Sub(hit.Normal.Scale(remainingVel.Dot(hit.Normal)))
+	if slideDirection.MagSq() < coll.Epsilon {
 		return movementToHit
 	}
 	slideDirectionUnit := slideDirection.Unit()

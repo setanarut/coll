@@ -14,17 +14,17 @@ import (
 // Parameters:
 //   - pos: Starting position of the ray
 //   - dir: Direction unit vector of the ray (should be normalized)
-//   - length: Maximum distance the ray can travel
+//   - mag: Maximum distance the ray can travel
 //   - tileMap: 2D grid of cells where any non-zero value represents a wall/obstacle
 //   - cellSize: Size of each tile in the grid
-//   - hit: Optional pointer to HitInfo struct (can be nil)
+//   - hit: Optional pointer to Hit struct (can be nil)
 //
 // Returns:
 //   - bool: True if a collision occurred
 //   - image.Point: The grid coordinates of the wall that was hit (0,0 if no hit)
-func RayTilemapDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize float64, hit *HitInfo) (bool, image.Point) {
+func RayTilemapDDA(pos, dir v.Vec, mag float64, tileMap [][]uint8, cellSize float64, hit *Hit) (bool, image.Point) {
 	// Bitiş noktasını hesapla
-	end := pos.Add(dir.Scale(length))
+	end := pos.Add(dir.Scale(mag))
 
 	// DDA için delta değerlerini hesapla
 	delta := end.Sub(pos)
@@ -52,23 +52,13 @@ func RayTilemapDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize f
 			if tileMap[cell.Y][cell.X] != 0 {
 				// hit nil değilse bilgileri doldur
 				if hit != nil {
-					// Çarpışma noktasını kaydet
-					hit.Pos = current
-
 					// Mesafe ve zaman (0..1) hesapla
 					distance := current.Sub(pos).Mag()
-					if length > 0 {
-						hit.Time = distance / length
+					if mag > 0 {
+						hit.Data = distance / mag
 					} else {
-						hit.Time = 0
+						hit.Data = 0
 					}
-
-					// Kalan hareket vektörü (başlangıçtan hedefe kadar - gittiğimiz mesafe)
-					remaining := length - distance
-					if remaining < 0 {
-						remaining = 0
-					}
-					hit.Delta = dir.Scale(remaining)
 
 					// Yüzey normalini hesapla
 					cellCenterX := float64(cell.X)*cellSize + cellSize/2
@@ -97,13 +87,11 @@ func RayTilemapDDA(pos, dir v.Vec, length float64, tileMap [][]uint8, cellSize f
 
 	// Çarpışma bulunamadı - hit nil değilse son durumu kaydet
 	if hit != nil {
-		hit.Pos = end
 		hit.Normal = v.Vec{}
-		hit.Delta = v.Vec{}
-		if length > 0 {
-			hit.Time = 1.0
+		if mag > 0 {
+			hit.Data = 1.0
 		} else {
-			hit.Time = 0.0
+			hit.Data = 0.0
 		}
 	}
 

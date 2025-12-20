@@ -85,23 +85,17 @@ func FillBox(dst *ebiten.Image, box *coll.AABB, clr color.Color) {
 	vector.FillRect(dst, float32(box.Left()), float32(box.Top()), float32(box.Half.X*2), float32(box.Half.Y*2), clr, false)
 }
 
-// func DrawHitNormal(dst *ebiten.Image, hit *coll.Hit, pos, vel v.Vec, clr color.Color, arrow bool) {
-// 	hitpos := pos.Add(vel.Scale(hit.Time))
-// 	DrawRay(dst, hitpos, hit.Normal, 12, clr, arrow)
-// }
-
 func CursorPos() v.Vec {
 	curX, curY := ebiten.CursorPosition()
 	return v.Vec{float64(curX), float64(curY)}
 }
 
-func PrintHitInfoAt(dst *ebiten.Image, hit *coll.Hit, x, y int) {
-	ebitenutil.DebugPrintAt(
-		dst,
-		fmt.Sprintf("Normal: %v\nTime: %v", hit.Normal, hit.Time),
-		x,
-		y,
-	)
+func PrintHitInfoAt(dst *ebiten.Image, hit *coll.Hit, x, y int, isPenetration bool) {
+	if isPenetration {
+		ebitenutil.DebugPrintAt(dst, fmt.Sprintf("Normal: %v\nPenetration depth: %v", hit.Normal, hit.Data), x, y)
+	} else {
+		ebitenutil.DebugPrintAt(dst, fmt.Sprintf("Normal: %v\nTime: %v", hit.Normal, hit.Data), x, y)
+	}
 }
 
 func Axis() (axis v.Vec) {

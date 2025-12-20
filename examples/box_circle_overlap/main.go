@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"log"
 
@@ -14,10 +13,12 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-var box = coll.NewAABB(250, 250, 100, 100)
+var box = coll.NewAABB(250, 250, 40, 40)
 var circle = coll.NewCircle(200, 200, 25)
 
 var hit = &coll.Hit{}
+
+var screenBox = coll.NewAABB(250, 250, 220, 220)
 
 var collided bool
 var velocity = v.Vec{}
@@ -43,7 +44,12 @@ func (g *Game) Update() error {
 	hit.Reset()
 	collided = coll.BoxCircleOverlap(box, circle, hit)
 
-	box.Pos = box.Pos.Add(hit.Delta)
+	box.Pos = box.Pos.Add(hit.Normal.Neg().Scale(hit.Data))
+
+	if !coll.BoxBoxContain(screenBox, box) {
+		box.Pos.X = 250
+		box.Pos.Y = 250
+	}
 	return nil
 }
 
@@ -52,18 +58,15 @@ func (g *Game) Draw(s *ebiten.Image) {
 	if collided {
 		examples.StrokeCircleAt(s, cursor, circle.Radius, colornames.Red)
 		examples.StrokeCircle(s, circle, colornames.Yellow)
-		examples.DrawHitNormal(s, hit, box.Pos, velocity, color.White, true)
+		examples.DrawRay(s, box.Pos, hit.Normal, 30, color.White, true)
 	} else {
 		examples.StrokeCircle(s, circle, colornames.Gray)
 	}
-	examples.PrintHitInfoAt(s, hit, 10, 10)
 
-	ebitenutil.DebugPrintAt(
-		s,
-		fmt.Sprintf("Vel: %v\nBoxPos: %v", velocity, circle.Pos),
-		10,
-		100,
-	)
+	examples.StrokeBox(s, screenBox, colornames.Red)
+
+	examples.PrintHitInfoAt(s, hit, 40, 40, true)
+	ebitenutil.DebugPrintAt(s, "Push the box with the cursor.", 160, 100)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {

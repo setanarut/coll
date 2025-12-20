@@ -1,52 +1,62 @@
 package main
 
 import (
+	"image/color"
 	"log"
 
-	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/setanarut/coll"
 	"github.com/setanarut/coll/examples"
 	"github.com/setanarut/v"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"golang.org/x/image/colornames"
 )
 
-var (
-	box         = coll.NewAABB(100, 250, 10, 100)
-	boxVelocity = v.Vec{4, 0}
-)
-var (
-	circle         = coll.NewCircle(100, 100, 8)
-	circleVelocity = v.Vec{-4, 0}
-)
+var box = coll.NewAABB(250, 250, 20, 20)
+var circle = coll.NewCircle(200, 200, 16)
 
-var sweep bool
+var hit = &coll.Hit{}
+
+var screenBox = coll.NewAABB(250, 250, 220, 220)
+
+var collided bool
+var velCircle = v.Vec{}
+var velBox = v.Vec{0, 0}
+var cursor = v.Vec{}
 
 func main() {
-	g := &Game{ScreenWidth: 500, H: 500}
-	ebiten.SetWindowSize(int(g.ScreenWidth), int(g.H))
+	g := &Game{W: 500, H: 500}
+	ebiten.SetWindowSize(int(g.W), int(g.H))
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
 }
 
 type Game struct {
-	ScreenWidth, H float64
+	W, H float64
 }
 
 func (g *Game) Update() error {
+	cursor = examples.CursorPos()
+	velCircle = cursor.Sub(circle.Pos)
+	circle.Pos = circle.Pos.Add(velCircle)
 
-	circleVelocity = examples.CursorPos().Sub(circle.Pos)
-	sweep = coll.BoxCircleSweep2(
-		box,
-		circle,
-		boxVelocity,
-		circleVelocity,
-	)
-	circle.Pos = circle.Pos.Add(circleVelocity)
-	box.Pos = box.Pos.Add(boxVelocity)
+	hit.Reset()
+	collided = coll.BoxCircleSweep2(box, circle, velBox, velCircle, hit)
 
-	if box.Left() < 0 || box.Right() > g.ScreenWidth {
-		boxVelocity.X *= -1
+	if collided {
+		// Push the box
+		box.Pos = box.Pos.Add(velCircle.Scale(1.0 - hit.Data))
+	} else {
+		box.Pos = box.Pos.Add(velBox)
+	}
+
+	// Ekran sınırları kontrolü
+	if !coll.BoxBoxContain(screenBox, box) {
+		box.Pos.X = 250
+		box.Pos.Y = 250
+		velBox = v.Vec{0, 0}
 	}
 
 	return nil
@@ -54,17 +64,20 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(s *ebiten.Image) {
 	examples.StrokeBox(s, box, colornames.Gray)
-	if sweep {
-		examples.FillCircle(s, circle, colornames.Yellow)
+	if collided {
+		examples.StrokeCircleAt(s, cursor, circle.Radius, colornames.Red)
+		examples.StrokeCircle(s, circle, colornames.Yellow)
+		examples.DrawRay(s, box.Pos, hit.Normal, 20, color.White, true)
 	} else {
 		examples.StrokeCircle(s, circle, colornames.Gray)
 	}
+
+	examples.StrokeBox(s, screenBox, colornames.Red)
+
+	examples.PrintHitInfoAt(s, hit, 40, 40, false)
+	ebitenutil.DebugPrintAt(s, "Push the box with the cursor.", 160, 100)
 }
 
 func (g *Game) Layout(w, h int) (int, int) {
 	return 500, 500
-}
-
-func (g *Game) LayoutF(w, h float64) (float64, float64) {
-	return g.ScreenWidth, g.H
 }

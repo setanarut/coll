@@ -42,8 +42,7 @@ func (g *Game) Update() error {
 
 	hit.Reset()
 	collided = coll.BoxBoxOverlap(wall, box, hit)
-	fmt.Println(hit.Time)
-	box.Pos = box.Pos.Add(hit.Normal.Scale(hit.Time))
+	box.Pos = box.Pos.Add(hit.Normal.Scale(hit.Data))
 	return nil
 }
 
@@ -60,7 +59,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 	} else {
 		examples.StrokeBox(s, box, colornames.Gray)
 	}
-	examples.PrintHitInfoAt(s, hit, 10, 10)
+	examples.PrintHitInfoAt(s, hit, 10, 10, true)
 
 	ebitenutil.DebugPrintAt(
 		s,
