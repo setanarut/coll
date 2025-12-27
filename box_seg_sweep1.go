@@ -6,19 +6,12 @@ import (
 	"github.com/setanarut/v"
 )
 
-// BoxSegmentSweep1 sweep a moving AABB against a line segment.
+// BoxSegmentSweep1 sweep a moving box against a static line segment.
 //
 // If h is not nil and a collision is detected, it will be populated with:
 //   - Normal: Collision surface normal for the box
 //   - Data: Normalized time of impact (0.0 to 1.0) along the movement path
-//
-// Params:
-//
-//   - line - static line segment
-//   - box - moving box
-//   - delta - delta movement vector of the box
-//   - h - optional contact data structure filled on hit, can be nil
-func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
+func BoxSegmentSweep1(line *Segment, box *AABB, boxVel v.Vec, h *Hit) bool {
 
 	var lineMin, lineMax v.Vec
 
@@ -26,7 +19,7 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 	aabbMin := box.Min()
 	aabbMax := box.Max()
 
-	normalizedDelta := delta.Unit()
+	normalizedDelta := boxVel.Unit()
 
 	// calculate line bounds
 	lineDir := line.B.Sub(line.A)
@@ -64,7 +57,7 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 	boxProj := lineAabbDist.Dot(lineNormal)
 
 	// velocity, projected on the line normal
-	velProj := delta.Dot(lineNormal)
+	velProj := boxVel.Dot(lineNormal)
 
 	// inverse the radius if required
 	if velProj < 0 {
@@ -79,14 +72,14 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 	// run standard AABBvsAABB sweep
 	// against an AABB constructed from the extents of the line segment
 	// X axis overlap
-	if delta.X < 0 {
+	if boxVel.X < 0 {
 		// sweeping left
 		if aabbMax.X < lineMin.X {
 			return false
 		}
 
-		hit := (lineMax.X - aabbMin.X) / delta.X
-		out := (lineMin.X - aabbMax.X) / delta.X
+		hit := (lineMax.X - aabbMin.X) / boxVel.X
+		out := (lineMin.X - aabbMax.X) / boxVel.X
 		outTime = min(out, outTime)
 		if hit >= hitTime && hit <= outTime {
 			// box is hitting the line on its end:
@@ -95,14 +88,14 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 		}
 		hitTime = max(hit, hitTime)
 
-	} else if delta.X > 0 {
+	} else if boxVel.X > 0 {
 		// sweeping right
 		if aabbMin.X > lineMax.X {
 			return false
 		}
 
-		hit := (lineMin.X - aabbMax.X) / delta.X
-		out := (lineMax.X - aabbMin.X) / delta.X
+		hit := (lineMin.X - aabbMax.X) / boxVel.X
+		out := (lineMax.X - aabbMin.X) / boxVel.X
 		outTime = min(out, outTime)
 		if hit >= hitTime && hit <= outTime {
 			hitNormal = v.Left
@@ -119,14 +112,14 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 	}
 
 	// Y axis overlap
-	if delta.Y < 0 {
+	if boxVel.Y < 0 {
 		// sweeping up
 		if aabbMax.Y < lineMin.Y {
 			return false
 		}
 
-		hit := (lineMax.Y - aabbMin.Y) / delta.Y
-		out := (lineMin.Y - aabbMax.Y) / delta.Y
+		hit := (lineMax.Y - aabbMin.Y) / boxVel.Y
+		out := (lineMin.Y - aabbMax.Y) / boxVel.Y
 		outTime = min(out, outTime)
 		if hit >= hitTime && hit <= outTime {
 			hitNormal = v.Down
@@ -134,14 +127,14 @@ func BoxSegmentSweep1(line *Segment, box *AABB, delta v.Vec, h *Hit) bool {
 
 		hitTime = max(hit, hitTime)
 
-	} else if delta.Y > 0 {
+	} else if boxVel.Y > 0 {
 		// sweeping down
 		if aabbMin.Y > lineMax.Y {
 			return false
 		}
 
-		hit := (lineMin.Y - aabbMax.Y) / delta.Y
-		out := (lineMax.Y - aabbMin.Y) / delta.Y
+		hit := (lineMin.Y - aabbMax.Y) / boxVel.Y
+		out := (lineMax.Y - aabbMin.Y) / boxVel.Y
 		outTime = min(out, outTime)
 		if hit >= hitTime && hit <= outTime {
 			hitNormal = v.Up
