@@ -6,18 +6,13 @@ import (
 
 // BoxSegmentsSweep1Indexed returns the index of the colliding segment, or -1 if no collision was detected.
 //
-// Performs a sweep test of an AABB against a slice of line segments.
+// Performs a sweep test of an box against a slice of line segments.
 //
 // To determine the earliest point of impact along a movement vector,
 // It iterates through the provided segments and finds the collision that occurs at the minimum time value.
-//   - Normal: Collision surface normal for box
+// If h is not nil and a collision is detected, it will be populated with:
+//   - Normal: Collision surface normal for the box
 //   - Data: Normalized time of impact (0.0 to 1.0) along the movement path
-//
-// Parameters:
-//   - lines: Slice of line segments to test against
-//   - box: The axis-aligned bounding box
-//   - velBox: Movement vector for box
-//   - h: Optional pointer to Hit struct (can be nil)
 func BoxSegmentsSweep1Indexed(lines []*Segment, box *AABB, velBox v.Vec, h *Hit) (index int) {
 	colliderIndex := -1
 	var resHitTime float64

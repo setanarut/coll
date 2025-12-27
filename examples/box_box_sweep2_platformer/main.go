@@ -40,6 +40,14 @@ var (
 type Game struct{}
 
 func (g *Game) Update() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		switch ebiten.TPS() {
+		case 60:
+			ebiten.SetTPS(3)
+		case 3:
+			ebiten.SetTPS(60)
+		}
+	}
 	updatePlatformVelocity()
 	playerVel.Y += Gravity
 	speed := examples.Axis().Unit().Scale(MoveSpeedX)
