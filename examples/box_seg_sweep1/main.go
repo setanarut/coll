@@ -22,7 +22,7 @@ var (
 	}
 	box      = coll.NewAABB(0, 0, 20, 30)
 	hit      = &coll.Hit{}
-	boxVel   = v.FromAngle(math.Pi / 4).Scale(boxSpeed)
+	boxDelta   = v.FromAngle(math.Pi / 4).Scale(boxSpeed)
 	collided bool
 )
 
@@ -39,12 +39,12 @@ type Game struct{}
 func (g *Game) Update() error {
 
 	hit.Reset()
-	collided = coll.BoxSegmentSweep1(staticLine, box, boxVel, hit)
+	collided = coll.BoxSegmentSweep1(staticLine, box, boxDelta, hit)
 
 	if collided {
-		box.Pos = box.Pos.Add(slide(boxVel, hit))
+		box.Pos = box.Pos.Add(slide(boxDelta, hit))
 	} else {
-		box.Pos = box.Pos.Add(boxVel)
+		box.Pos = box.Pos.Add(boxDelta)
 	}
 
 	if box.Pos.X > 500 {
@@ -68,11 +68,11 @@ func (g *Game) Layout(w, h int) (int, int) {
 	return 500, 500
 }
 
-func slide(vel v.Vec, hit *coll.Hit) (slideVel v.Vec) {
-	movementToHit := vel.Scale(hit.Data)
-	remainingVel := vel.Sub(movementToHit)
-	originalSpeed := remainingVel.Mag()
-	slideDirection := remainingVel.Sub(hit.Normal.Scale(remainingVel.Dot(hit.Normal)))
+func slide(delta v.Vec, hit *coll.Hit) (slideDelta v.Vec) {
+	movementToHit := delta.Scale(hit.Data)
+	remaining := delta.Sub(movementToHit)
+	originalSpeed := remaining.Mag()
+	slideDirection := remaining.Sub(hit.Normal.Scale(remaining.Dot(hit.Normal)))
 	if slideDirection.MagSq() < coll.Epsilon {
 		return movementToHit
 	}

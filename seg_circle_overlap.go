@@ -11,9 +11,9 @@ import (
 // If the returned slice is nil, there is no intersection.
 //
 // The length can be 1 or 2. It can be queried with the len() method.
-func SegmentCircleOverlap(seg *Segment, c *Circle) []v.Vec {
-	dp := seg.B.Sub(seg.A)
-	dAPos := seg.A.Sub(c.Pos)
+func SegmentCircleOverlap(s *Segment, c *Circle) []v.Vec {
+	dp := s.B.Sub(s.A)
+	dAPos := s.A.Sub(c.Pos)
 	a := dp.MagSq()
 	b := 2 * dp.Dot(dAPos)
 	bb4ac := b*b - 4*a*(dAPos.MagSq()-c.Radius*c.Radius)
@@ -32,10 +32,10 @@ func SegmentCircleOverlap(seg *Segment, c *Circle) []v.Vec {
 	mu2 := (negB - sqrtBB4AC) * invA2
 
 	if mu1 >= 0 && mu1 <= 1 {
-		hitPoints = append(hitPoints, seg.A.Add(seg.B.Sub(seg.A).Scale(mu1)))
+		hitPoints = append(hitPoints, s.A.Add(s.B.Sub(s.A).Scale(mu1)))
 	}
 	if mu2 >= 0 && mu2 <= 1 {
-		hitPoints = append(hitPoints, seg.A.Add(seg.B.Sub(seg.A).Scale(mu2)))
+		hitPoints = append(hitPoints, s.A.Add(s.B.Sub(s.A).Scale(mu2)))
 	}
 	return hitPoints
 }

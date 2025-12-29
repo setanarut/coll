@@ -58,10 +58,10 @@ func (g *Game) Update() error {
 	player.Pos.X = origin.X + radius*math.Sin(orbitalAngle)*3
 	player.Pos.Y = origin.X + radius*math.Cos(orbitalAngle)*3
 
-	velBullet := bullet.Pos.Sub(bulletOldPos)
-	velPlayer := player.Pos.Sub(playerOldPos)
+	bulletDelta := bullet.Pos.Sub(bulletOldPos)
+	playerDelta := player.Pos.Sub(playerOldPos)
 
-	collided = coll.BoxOrientedBoxSweep2(player, bullet, velPlayer, velBullet)
+	collided = coll.BoxOrientedBoxSweep2(player, bullet, playerDelta, bulletDelta)
 
 	orbitalAngle += 0.2
 

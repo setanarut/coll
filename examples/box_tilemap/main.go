@@ -49,16 +49,16 @@ type Game struct {
 func (g *Game) Update() error {
 
 	// Get input axis
-	vel := examples.Axis()
-	vel.Y *= 6
-	vel.X *= 6
+	delta := examples.Axis()
+	delta.Y *= 6
+	delta.X *= 6
 
 	// Collide with tiles
-	delta := collider.Collide(rect, vel, nil)
+	allowedDelta := collider.Collide(rect, delta, nil)
 
 	// Update player position
-	rect.Pos.X += delta.X
-	rect.Pos.Y += delta.Y
+	rect.Pos.X += allowedDelta.X
+	rect.Pos.Y += allowedDelta.Y
 
 	return nil
 }

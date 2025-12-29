@@ -21,8 +21,8 @@ var hit = &coll.Hit{}
 var screenBox = coll.NewAABB(250, 250, 220, 220)
 
 var collided bool
-var velCircle = v.Vec{}
-var velBox = v.Vec{0, 0}
+var circleDelta = v.Vec{}
+var boxDelta = v.Vec{0, 0}
 var cursor = v.Vec{}
 
 func main() {
@@ -39,24 +39,24 @@ type Game struct {
 
 func (g *Game) Update() error {
 	cursor = examples.CursorPos()
-	velCircle = cursor.Sub(circle.Pos)
-	circle.Pos = circle.Pos.Add(velCircle)
+	circleDelta = cursor.Sub(circle.Pos)
+	circle.Pos = circle.Pos.Add(circleDelta)
 
 	hit.Reset()
-	collided = coll.BoxCircleSweep2(box, circle, velBox, velCircle, hit)
+	collided = coll.BoxCircleSweep2(box, circle, boxDelta, circleDelta, hit)
 
 	if collided {
 		// Push the box
-		box.Pos = box.Pos.Add(velCircle.Scale(1.0 - hit.Data))
+		box.Pos = box.Pos.Add(circleDelta.Scale(1.0 - hit.Data))
 	} else {
-		box.Pos = box.Pos.Add(velBox)
+		box.Pos = box.Pos.Add(boxDelta)
 	}
 
 	// Ekran sınırları kontrolü
 	if !coll.BoxBoxContain(screenBox, box) {
 		box.Pos.X = 250
 		box.Pos.Y = 250
-		velBox = v.Vec{0, 0}
+		boxDelta = v.Vec{0, 0}
 	}
 
 	return nil

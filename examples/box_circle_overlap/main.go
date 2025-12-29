@@ -21,7 +21,7 @@ var hit = &coll.Hit{}
 var screenBox = coll.NewAABB(250, 250, 220, 220)
 
 var collided bool
-var velocity = v.Vec{}
+var delta = v.Vec{}
 var cursor = v.Vec{}
 
 func main() {
@@ -38,8 +38,8 @@ type Game struct {
 
 func (g *Game) Update() error {
 	cursor = examples.CursorPos()
-	velocity = cursor.Sub(circle.Pos)
-	circle.Pos = circle.Pos.Add(velocity)
+	delta = cursor.Sub(circle.Pos)
+	circle.Pos = circle.Pos.Add(delta)
 
 	hit.Reset()
 	collided = coll.BoxCircleOverlap(box, circle, hit)

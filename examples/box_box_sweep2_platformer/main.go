@@ -26,12 +26,12 @@ const (
 
 var (
 	player        = coll.NewAABB(425, 250, 16, 36)
-	playerVel     = v.Vec{0, 0}
+	playerDelta   = v.Vec{0, 0}
 	playerHitInfo = &coll.Hit{}
 )
 var (
 	platform       = coll.NewAABB(400, 300, 64, 16)
-	platformVel    = v.Vec{}
+	platformDelta  = v.Vec{}
 	platformCenter = v.Vec{X: ScreenWidth / 2, Y: 200}
 	platformRadius = 150.0
 	platformAngle  = 0.0
@@ -48,38 +48,38 @@ func (g *Game) Update() error {
 			ebiten.SetTPS(60)
 		}
 	}
-	updatePlatformVelocity()
-	playerVel.Y += Gravity
+	updatePlatformDelta()
+	playerDelta.Y += Gravity
 	speed := examples.Axis().Unit().Scale(MoveSpeedX)
 	playerHitInfo.Reset()
-	hit := coll.BoxBoxSweep2(platform, player, platformVel, playerVel, playerHitInfo)
+	hit := coll.BoxBoxSweep2(platform, player, platformDelta, playerDelta, playerHitInfo)
 	onGround := false
 	if hit && playerHitInfo.Normal.Y == -1 {
-		playerPosAtHit := player.Pos.Add(playerVel.Scale(playerHitInfo.Data))
-		platformPosAtHit := platform.Pos.Add(platformVel.Scale(playerHitInfo.Data))
+		playerPosAtHit := player.Pos.Add(playerDelta.Scale(playerHitInfo.Data))
+		platformPosAtHit := platform.Pos.Add(platformDelta.Scale(playerHitInfo.Data))
 		playerBottomAtHit := playerPosAtHit.Y + player.Half.Y
 		platformTopAtHit := platformPosAtHit.Y - platform.Half.Y
 		onGround = playerBottomAtHit <= platformTopAtHit
 	}
 	if onGround {
-		player.Pos = player.Pos.Add(playerVel.Scale(playerHitInfo.Data))
-		player.Pos.Y = platform.Pos.Y + platformVel.Y - player.Half.Y - platform.Half.Y
-		player.Pos.X += platformVel.X + speed.X
-		playerVel.X = platformVel.X + speed.X
-		playerVel.Y = platformVel.Y
+		player.Pos = player.Pos.Add(playerDelta.Scale(playerHitInfo.Data))
+		player.Pos.Y = platform.Pos.Y + platformDelta.Y - player.Half.Y - platform.Half.Y
+		player.Pos.X += platformDelta.X + speed.X
+		playerDelta.X = platformDelta.X + speed.X
+		playerDelta.Y = platformDelta.Y
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			playerVel.Y = JumpPower
+			playerDelta.Y = JumpPower
 		}
 	} else {
-		playerVel.X = speed.X
-		player.Pos = player.Pos.Add(playerVel)
+		playerDelta.X = speed.X
+		player.Pos = player.Pos.Add(playerDelta)
 	}
-	platform.Pos = platform.Pos.Add(platformVel)
+	platform.Pos = platform.Pos.Add(platformDelta)
 	if player.Bottom() >= ScreenHeight {
 		player.SetBottom(ScreenHeight)
-		playerVel.Y = 0
+		playerDelta.Y = 0
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-			playerVel.Y = JumpPower
+			playerDelta.Y = JumpPower
 		}
 	}
 	// inherit only the platform's fractional X offset to avoid sub-pixel jitter.
@@ -89,12 +89,12 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func updatePlatformVelocity() {
+func updatePlatformDelta() {
 	platformAngle += PlatformSpeed
 	newPlatCenterX := platformCenter.X + math.Cos(platformAngle)*platformRadius
 	newPlatCenterY := platformCenter.Y + math.Sin(platformAngle)*platformRadius
 	newPlatPos := v.Vec{X: newPlatCenterX, Y: newPlatCenterY}
-	platformVel = newPlatPos.Sub(platform.Pos)
+	platformDelta = newPlatPos.Sub(platform.Pos)
 }
 func (g *Game) Draw(s *ebiten.Image) {
 	s.Fill(color.Gray{20})
@@ -109,7 +109,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	ebiten.SetScreenClearedEveryFrame(false)
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
-	ebiten.SetWindowTitle("Relative Velocity Platformer Example")
+	ebiten.SetWindowTitle("Platformer Example")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}

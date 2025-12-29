@@ -13,11 +13,11 @@ import (
 
 var (
 	circle1    = coll.NewCircle(250, 250, 30)
-	circle1Vel = v.Vec{2, 0}
+	circle1Delta = v.Vec{2, 0}
 )
 var (
 	circle2    = coll.NewCircle(250, 250, 30)
-	circle2Vel = v.Vec{0, 0}
+	circle2Delta = v.Vec{0, 0}
 )
 
 var circ2HitInfo = &coll.Hit{}
@@ -38,23 +38,23 @@ type Game struct {
 
 func (g *Game) Update() error {
 
-	circle1Vel = examples.CursorPos().Sub(circle1.Pos)
+	circle1Delta = examples.CursorPos().Sub(circle1.Pos)
 
 	circ2HitInfo.Reset()
 	collided = coll.CircleCircleSweep2(
 		circle1,
 		circle2,
-		circle1Vel,
-		circle2Vel,
+		circle1Delta,
+		circle2Delta,
 		circ2HitInfo,
 	)
 
-	circle1.Pos = circle1.Pos.Add(circle1Vel)
-	circle2.Pos = circle2.Pos.Add(circle2Vel)
+	circle1.Pos = circle1.Pos.Add(circle1Delta)
+	circle2.Pos = circle2.Pos.Add(circle2Delta)
 
 	cx := circle2.Pos.X
 	if cx < 0 || cx > g.ScreenWidth {
-		circle2Vel.X *= -1
+		circle2Delta.X *= -1
 	}
 
 	return nil

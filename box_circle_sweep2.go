@@ -9,25 +9,24 @@ import (
 // BoxCircleSweep2 checks for collision between a moving AABB and a moving Circle.
 //
 // Returns true if collision occurs during movement, false otherwise.
-func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit) bool {
-	// Relative velocity (circle relative to box)
-	relVelX := circleVel.X - boxVel.X
-	relVelY := circleVel.Y - boxVel.Y
+func BoxCircleSweep2(a *AABB, b *Circle, deltaA, deltaB v.Vec, h *Hit) bool {
+	relDeltaX := deltaB.X - deltaA.X
+	relDeltaY := deltaB.Y - deltaA.Y
 
 	// If no relative movement, check overlap directly
-	relVelMagSq := relVelX*relVelX + relVelY*relVelY
-	if relVelMagSq < 1e-8 {
+	relDeltaMagSq := relDeltaX*relDeltaX + relDeltaY*relDeltaY
+	if relDeltaMagSq < 1e-8 {
 		// Find closest point on AABB to circle center
-		closestX := math.Max(box.Pos.X-box.Half.X, math.Min(circle.Pos.X, box.Pos.X+box.Half.X))
-		closestY := math.Max(box.Pos.Y-box.Half.Y, math.Min(circle.Pos.Y, box.Pos.Y+box.Half.Y))
+		closestX := math.Max(a.Pos.X-a.Half.X, math.Min(b.Pos.X, a.Pos.X+a.Half.X))
+		closestY := math.Max(a.Pos.Y-a.Half.Y, math.Min(b.Pos.Y, a.Pos.Y+a.Half.Y))
 
 		// Vector from closest point to circle center
-		distX := circle.Pos.X - closestX
-		distY := circle.Pos.Y - closestY
+		distX := b.Pos.X - closestX
+		distY := b.Pos.Y - closestY
 		distSq := distX*distX + distY*distY
 
 		// Check if overlapping
-		if distSq >= circle.Radius*circle.Radius {
+		if distSq >= b.Radius*b.Radius {
 			return false
 		}
 
@@ -37,10 +36,10 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 			// If circle center is inside box
 			if distSq < 1e-8 {
 				// Calculate penetration depths for each side
-				leftDist := (circle.Pos.X - (box.Pos.X - box.Half.X)) + circle.Radius
-				rightDist := ((box.Pos.X + box.Half.X) - circle.Pos.X) + circle.Radius
-				topDist := (circle.Pos.Y - (box.Pos.Y - box.Half.Y)) + circle.Radius
-				bottomDist := ((box.Pos.Y + box.Half.Y) - circle.Pos.Y) + circle.Radius
+				leftDist := (b.Pos.X - (a.Pos.X - a.Half.X)) + b.Radius
+				rightDist := ((a.Pos.X + a.Half.X) - b.Pos.X) + b.Radius
+				topDist := (b.Pos.Y - (a.Pos.Y - a.Half.Y)) + b.Radius
+				bottomDist := ((a.Pos.Y + a.Half.Y) - b.Pos.Y) + b.Radius
 
 				// Find minimum penetration
 				minDist := math.Min(math.Min(leftDist, rightDist), math.Min(topDist, bottomDist))
@@ -71,26 +70,26 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 	}
 
 	// Expanded box bounds (box + circle radius)
-	halfX := box.Half.X + circle.Radius
-	halfY := box.Half.Y + circle.Radius
-	boxMinX := box.Pos.X - halfX
-	boxMaxX := box.Pos.X + halfX
-	boxMinY := box.Pos.Y - halfY
-	boxMaxY := box.Pos.Y + halfY
+	halfX := a.Half.X + b.Radius
+	halfY := a.Half.Y + b.Radius
+	boxMinX := a.Pos.X - halfX
+	boxMaxX := a.Pos.X + halfX
+	boxMinY := a.Pos.Y - halfY
+	boxMaxY := a.Pos.Y + halfY
 
 	// AABB ray intersection (slab method)
 	var tminX, tmaxX, tminY, tmaxY float64
 	var hitX, hitY bool
 
-	if math.Abs(relVelX) > 1e-8 {
-		invDirX := 1.0 / relVelX
-		t1 := (boxMinX - circle.Pos.X) * invDirX
-		t2 := (boxMaxX - circle.Pos.X) * invDirX
+	if math.Abs(relDeltaX) > 1e-8 {
+		invDirX := 1.0 / relDeltaX
+		t1 := (boxMinX - b.Pos.X) * invDirX
+		t2 := (boxMaxX - b.Pos.X) * invDirX
 		tminX = min(t1, t2)
 		tmaxX = max(t1, t2)
 		hitX = true
 	} else {
-		if circle.Pos.X < boxMinX || circle.Pos.X > boxMaxX {
+		if b.Pos.X < boxMinX || b.Pos.X > boxMaxX {
 			return false
 		}
 		tminX = -math.MaxFloat64
@@ -98,15 +97,15 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 		hitX = false
 	}
 
-	if math.Abs(relVelY) > 1e-8 {
-		invDirY := 1.0 / relVelY
-		t3 := (boxMinY - circle.Pos.Y) * invDirY
-		t4 := (boxMaxY - circle.Pos.Y) * invDirY
+	if math.Abs(relDeltaY) > 1e-8 {
+		invDirY := 1.0 / relDeltaY
+		t3 := (boxMinY - b.Pos.Y) * invDirY
+		t4 := (boxMaxY - b.Pos.Y) * invDirY
 		tminY = min(t3, t4)
 		tmaxY = max(t3, t4)
 		hitY = true
 	} else {
-		if circle.Pos.Y < boxMinY || circle.Pos.Y > boxMaxY {
+		if b.Pos.Y < boxMinY || b.Pos.Y > boxMaxY {
 			return false
 		}
 		tminY = -math.MaxFloat64
@@ -125,16 +124,16 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 	// Already overlapping at t=0
 	if tmin < 0 {
 		// Find closest point on AABB to circle center
-		closestX := math.Max(box.Pos.X-box.Half.X, math.Min(circle.Pos.X, box.Pos.X+box.Half.X))
-		closestY := math.Max(box.Pos.Y-box.Half.Y, math.Min(circle.Pos.Y, box.Pos.Y+box.Half.Y))
+		closestX := math.Max(a.Pos.X-a.Half.X, math.Min(b.Pos.X, a.Pos.X+a.Half.X))
+		closestY := math.Max(a.Pos.Y-a.Half.Y, math.Min(b.Pos.Y, a.Pos.Y+a.Half.Y))
 
 		// Vector from closest point to circle center
-		distX := circle.Pos.X - closestX
-		distY := circle.Pos.Y - closestY
+		distX := b.Pos.X - closestX
+		distY := b.Pos.Y - closestY
 		distSq := distX*distX + distY*distY
 
 		// Check if overlapping
-		if distSq >= circle.Radius*circle.Radius {
+		if distSq >= b.Radius*b.Radius {
 			return false
 		}
 
@@ -144,10 +143,10 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 			// If circle center is inside box
 			if distSq < 1e-8 {
 				// Calculate penetration depths for each side
-				leftDist := (circle.Pos.X - (box.Pos.X - box.Half.X)) + circle.Radius
-				rightDist := ((box.Pos.X + box.Half.X) - circle.Pos.X) + circle.Radius
-				topDist := (circle.Pos.Y - (box.Pos.Y - box.Half.Y)) + circle.Radius
-				bottomDist := ((box.Pos.Y + box.Half.Y) - circle.Pos.Y) + circle.Radius
+				leftDist := (b.Pos.X - (a.Pos.X - a.Half.X)) + b.Radius
+				rightDist := ((a.Pos.X + a.Half.X) - b.Pos.X) + b.Radius
+				topDist := (b.Pos.Y - (a.Pos.Y - a.Half.Y)) + b.Radius
+				bottomDist := ((a.Pos.Y + a.Half.Y) - b.Pos.Y) + b.Radius
 
 				// Find minimum penetration
 				minDist := math.Min(math.Min(leftDist, rightDist), math.Min(topDist, bottomDist))
@@ -185,19 +184,19 @@ func BoxCircleSweep2(box *AABB, circle *Circle, boxVel, circleVel v.Vec, h *Hit)
 	if !hitX {
 		// Only Y axis moving
 		h.Normal.X = 0
-		h.Normal.Y = math.Copysign(1, -relVelY)
+		h.Normal.Y = math.Copysign(1, -relDeltaY)
 	} else if !hitY {
 		// Only X axis moving
-		h.Normal.X = math.Copysign(1, -relVelX)
+		h.Normal.X = math.Copysign(1, -relDeltaX)
 		h.Normal.Y = 0
 	} else if tminX > tminY {
 		// X axis constrained the hit
-		h.Normal.X = math.Copysign(1, -relVelX)
+		h.Normal.X = math.Copysign(1, -relDeltaX)
 		h.Normal.Y = 0
 	} else {
 		// Y axis constrained the hit
 		h.Normal.X = 0
-		h.Normal.Y = math.Copysign(1, -relVelY)
+		h.Normal.Y = math.Copysign(1, -relDeltaY)
 	}
 
 	h.Data = tmin

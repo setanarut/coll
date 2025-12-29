@@ -20,7 +20,7 @@ var box = coll.NewAABB(200, 200, 25, 25)
 var hit = &coll.Hit{}
 
 var collided bool
-var velocity = v.Vec{}
+var delta = v.Vec{}
 var cursor = v.Vec{}
 
 func main() {
@@ -37,8 +37,8 @@ type Game struct {
 
 func (g *Game) Update() error {
 	cursor = examples.CursorPos()
-	velocity = cursor.Sub(box.Pos)
-	box.Pos = box.Pos.Add(velocity)
+	delta = cursor.Sub(box.Pos)
+	box.Pos = box.Pos.Add(delta)
 
 	hit.Reset()
 	collided = coll.BoxBoxOverlap(wall, box, hit)
@@ -63,7 +63,7 @@ func (g *Game) Draw(s *ebiten.Image) {
 
 	ebitenutil.DebugPrintAt(
 		s,
-		fmt.Sprintf("Vel: %v\nBoxPos: %v", velocity, box.Pos),
+		fmt.Sprintf("Delta: %v\nBoxPos: %v", delta, box.Pos),
 		10,
 		100,
 	)
