@@ -65,8 +65,8 @@ func BoxSegmentSweep1(s *Segment, a *AABB, deltaA v.Vec, h *Hit) bool {
 
 	// calculate first and last overlap times,
 	// as if we're dealing with a line rather than a segment
-	hitTime = math.Max((boxProj-r)/dProj, hitTime)
-	outTime = math.Min((boxProj+r)/dProj, outTime)
+	hitTime = max((boxProj-r)/dProj, hitTime)
+	outTime = min((boxProj+r)/dProj, outTime)
 
 	// run standard AABBvsAABB sweep
 	// against an AABB constructed from the extents of the line segment
