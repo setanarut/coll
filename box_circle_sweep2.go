@@ -6,6 +6,9 @@ import (
 	"github.com/setanarut/v"
 )
 
+// BoxCircleSweep2 checks for collision between a moving AABB and a moving Circle.
+//
+// Returns true if collision occurs during movement, false otherwise.
 func BoxCircleSweep2(a *AABB, b *Circle, deltaA, deltaB v.Vec, h *Hit) bool {
 	relDelta := deltaB.Sub(deltaA)
 
