@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 	"log"
-	"slices"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -20,27 +20,48 @@ const (
 )
 
 var rect = coll.AABB{
-	Pos:  v.Vec{140, 130},
+	Pos:  v.Vec{10, 10},
 	Half: v.Vec{8, 8},
 }
 
+type Tile struct {
+	ID uint8
+}
+
+func (t *Tile) IsSolid() bool {
+	return t.ID != 0
+}
+
 var (
-	TileMap = [][]uint8{
+	tiles = [][]uint8{
 		{0, 0, 0, 1, 1, 0, 9, 1},
 		{0, 0, 0, 0, 0, 6, 0, 1},
 		{4, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 8, 0, 8, 3, 1},
-		{2, 0, 0, 33, 66, 0, 0, 0},
+		{0, 0, 0, 0, 0, 0, 3, 1},
+		{2, 0, 0, 0, 0, 0, 0, 0},
 		{1, 0, 0, 0, 0, 0, 0, 0},
-		{1, 0, 4, 0, 5, 0, 0, 0},
-		{1, 4, 2, 8, 1, 88, 13, 1},
+		{1, 0, 4, 0, 0, 0, 0, 0},
+		{1, 4, 2, 8, 1, 3, 3, 1},
 	}
 
-	collider = coll.NewTileCollider(TileMap, screenWidth/8, screenHeight/8)
+	tileMap  [][]coll.Tile
+	collider *coll.TileCollider
 )
 
 func init() {
-	collider.NonSolidTileIDs = append(collider.NonSolidTileIDs, 33, 66)
+	tileMap = make([][]coll.Tile, len(tiles))
+
+	for y := range tiles {
+		tileMap[y] = make([]coll.Tile, len(tiles[y]))
+		for x, id := range tiles[y] {
+			tileMap[y][x] = &Tile{ID: id}
+		}
+	}
+
+	collider = &coll.TileCollider{
+		TileMap:  tileMap,
+		CellSize: image.Point{64, 64},
+	}
 }
 
 type Game struct {
@@ -66,9 +87,9 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Draw tiles
-	for y := range len(TileMap) {
-		for x := range len(TileMap[y]) {
-			if !slices.Contains(collider.NonSolidTileIDs, collider.TileMap[y][x]) {
+	for y := range len(tileMap) {
+		for x := range len(tileMap[y]) {
+			if collider.TileMap[y][x].IsSolid() {
 				vector.FillRect(screen,
 					float32(x*collider.CellSize.X),
 					float32(y*collider.CellSize.Y),
